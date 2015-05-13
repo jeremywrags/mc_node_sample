@@ -1,0 +1,68 @@
+{
+  "name": "samplenodeapp",
+  "version": "0.1.0",
+  "description": "Sample app",
+  "main": "index.js",
+  "scripts": {
+    "test": "grunt tests",
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": "0.10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.exacttarget.com:MarketingCloudDev/derelicte-campaign.git"
+  },
+  "author": "ExactTarget",
+  "contributors": [
+    "Jeremy Ragsdale <jragsdale@salesforce.com>"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "async": "^0.9.0",
+    "bluebird": "^2.9.25",
+    "config": "~1.3.0",
+    "et-fuel-token": "git+https://github.com/jimmyburgess/et-fuel-token.git",
+	  "et-express-error-handlers": "git+https://github.com/jimmyburgess/et-express-error-handlers.git",
+	  "et-rest-proxy": "git+https://github.com/jimmyburgess/et-rest-proxy.git",
+    "express": "~3.15.0",
+    "express-handlebars": "~1.1.0",
+    "express-less-middleware": "~1.3.1",
+    "fuel-soap": "^1.0.0",
+    "hbs": "~2.4.0",
+    "less": "*",
+    "lusca": "~1.0.1",
+    "method-override": "~2.2.0",
+    "multer": "^0.1.8",
+    "underscore": "~1.5.2"
+  },
+  "devDependencies": {
+    "chai": "~1.9.2",
+    "grunt": "~0.4.5",
+    "grunt-bump": "0.0.13",
+    "grunt-complexity": "~0.1.3",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-compress": "~0.10.0",
+    "grunt-contrib-imagemin": "~0.8.1",
+    "grunt-contrib-jshint": "~0.7.2",
+    "grunt-contrib-less": "~0.9.0",
+    "grunt-contrib-requirejs": "~0.4.1",
+    "grunt-git-describe": "~2.3.2",
+    "grunt-karma": "~0.9.0",
+    "grunt-text-replace": "~0.3.11",
+    "karma": "~0.12.24",
+    "karma-chai": "~0.1.0",
+    "karma-chrome-launcher": "~0.1.4",
+    "karma-coverage": "~0.2.6",
+    "karma-firefox-launcher": "~0.1.3",
+    "karma-mocha": "~0.1.9",
+    "karma-phantomjs-launcher": "~0.1.4",
+    "karma-requirejs": "~0.2.2",
+    "karma-sinon": "~1.0.3",
+    "matchdep": "~0.3.0",
+    "mocha": "~1.21.4",
+    "requirejs": "~2.1.15",
+    "sinon": "~1.10.3"
+  }
+}

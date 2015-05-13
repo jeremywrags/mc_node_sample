@@ -1,0 +1,322 @@
+<style>
+  .panel-heading a:after {
+    font-family: 'Glyphicons Halflings';
+    content: "\e114";
+    float: right;
+    color: grey;
+  }
+  .panel-heading a.collapsed:after {
+    content: "\e080";
+  }
+</style>
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.1.1/themes/default/style.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.1.1/jstree.min.js"></script>
+
+
+<script>
+$(document).ready(function() {
+  
+  //alert("{{QueryTaskID}}");
+  
+  $(document).on('click', '.deLink .dvlink', function(){
+        $( "#loading" ).css("display", "block")
+  });
+  
+  $( document ).ajaxComplete(function() {
+    $( "#loading" ).css("display", "none")
+  });
+  
+  $("#sqlForm").submit(function(event){
+    
+      var qt = $("#queryText").text();
+      if(qt.indexOf("select") > 0)
+      {
+        alert('SFMC queries must begin with "select"')
+        event.preventDefault();
+      }
+    
+  });
+  
+  $.ajax({
+    url: '/delist',
+    type: 'GET',
+    success: function(data) {
+      var deList= data[1];
+      var FolderList = data[0];
+      
+      $('#results').html("");
+      for (var i = 0; i < deList.length; i++) {
+        $('#results').append("<a type='button' class='btn btn-xs btn-link deLink' alias='tbl" + i + "' name='" + deList[i].Name + "' customerKey='" + deList[i].CustomerKey + "' style='text-decoration:none;' id='de_" + deList[0].Name + "'>" + deList[i].Name + "</a></br>");
+      }
+      
+      var arr = [];
+      
+      var obj = new Object();
+      obj.id = 1040721;
+      obj.parent = "#";
+      obj.text = "Data Extensions";
+      arr.push(obj);
+        
+      for (var i = 0; i < FolderList.length; i++) {
+        
+        var obj = new Object();
+        obj.id = FolderList[i].ID;
+        obj.parent = FolderList[i].ParentFolder.ID;
+        obj.text = FolderList[i].Name;
+        arr.push(obj);
+      }
+      
+      for (var i = 0; i < deList.length; i++) {
+        var obj = new Object();
+        obj.id = deList[i].Name;
+        obj.parent = 1040721;
+        obj.icon = "test"
+        obj.text = deList[i].Name;
+        arr.push(obj);
+      }
+      
+      
+      
+      /*$('#results2').jstree({ 
+        'core' : 
+        {
+          'data' : arr
+        }
+      });*/
+    }
+  });
+    
+    
+  $(document).on('blur', '#nameCustKey', function(){  
+    
+    if($(this).val() != "")
+    {
+      var textBox = $(this);
+      $.ajax({
+        url: '/nameCheck',
+        type: 'post',
+        data: {
+          customerKey: $(this).val(),
+          objType: "dataextension"
+        },
+        success: function(items) {
+          if(items.length > 0)
+          {
+            textBox.val("");
+            textBox.focus();
+            alert("The choosen name has already been used, please enter a new name.")
+          }
+        }
+      });  
+    }
+  });
+    
+  $(document).on('dblclick', '.fieldLink', function(){
+            var name = $(this).attr("name");
+            var alias = $(this).attr("alias");
+            
+            if("star" === name)
+            {
+              var columns = $(this).attr("columns").split(",");
+              for(var i = 0; i <= columns.length; i ++)
+                if(i < columns.length -1)
+                  $("#queryText").insertAtCaret(alias + "." + columns[i].trim() + ", ", "back");
+                else
+                  $("#queryText").insertAtCaret(alias + "." + columns[i].trim(), "back");
+            }
+            else
+              $("#queryText").insertAtCaret(alias + "." + name.trim(), "back");
+            
+  });
+  
+  $(document).on('dblclick', '.deLink', function(){
+            var name = $(this).attr("name");
+            var alias = $(this).attr("alias");
+            $("#queryText").insertAtCaret(name + " as " + alias, "front");
+            
+  });
+  
+  $(document).on('dblclick', '.dvLink', function(){
+            var name = $(this).attr("name");
+            var alias = $(this).attr("alias");
+            $("#queryText").insertAtCaret(name + " as " + alias, "front");
+            
+  });
+  
+  $("#collapseOne").on('show.bs.collapse', function (e) {
+      $("#collapseTwo").collapse('hide');
+  });
+  
+  
+  
+  $(document.body).on('click', '.deLink', function() {
+    
+    $("#collapseTwo").collapse('show');
+    var temp = $(this);
+    var columns = "";
+    var cKey = $(this).attr("customerKey");
+    $.ajax({
+      url: '/deFieldlist',
+      data: { customerKey: cKey},
+      type: 'POST',
+      success: function(items) {
+        $('#fields').html("");
+        for (var i = 0; i < items.length; i++) {
+          $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + temp.attr("alias") + "' name='" + items[i].Name + "' customerKey='" + items[i].Name + "' style='text-decoration:none;' id='de_" + items[i].Name + "'>" + items[i].Name + "</a></br>");
+          columns += items[i].Name + ",";
+        }
+        $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' columns='" + columns.substring(0, columns.length-1) + "' alias='" + temp.attr("alias") + "' name='star' customerKey='star' style='text-decoration:none;' id='de_star'>*</a></br>");
+      }
+    });  
+  });
+  
+  $(document.body).on('click', '.dvLink', function() {
+    
+    $("#collapseTwo").collapse('show');
+    var cols = $(this).attr("columns").split(",");
+    $('#fields').html("");
+    for(var i=0; i<cols.length; i++)
+    {
+      $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + $(this).attr("alias") + "' name='" + cols[i] + "' customerKey='" + cols[i]  + "' style='text-decoration:none;' id='de_" + cols[i]  + "'>" + cols[i] + "</a></br>");
+    }
+  });
+});
+
+
+jQuery.fn.extend({
+insertAtCaret: function(myValue){
+  return this.each(function(i) {
+    if (document.selection) {
+      //For browsers like Internet Explorer
+      this.focus();
+      var sel = document.selection.createRange();
+      sel.text = myValue;
+      this.focus();
+    }
+    else if (this.selectionStart || this.selectionStart == '0') {
+      //For browsers like Firefox and Webkit based
+      var startPos = this.selectionStart;
+      var endPos = this.selectionEnd;
+      var scrollTop = this.scrollTop;
+      this.value = this.value.substring(0, startPos)+myValue+this.value.substring(endPos,this.value.length);
+      this.focus();
+      this.selectionStart = startPos + myValue.length;
+      this.selectionEnd = startPos + myValue.length;
+      this.scrollTop = scrollTop;
+    } else {
+      this.value += myValue;
+      this.focus();
+    }
+  });
+}
+});
+
+
+</script>
+<div class="container">
+
+
+  <div class="row">
+    <div class="col-md-3">
+      <div class="panel-group" id="accordion">
+        <div class="panel panel-default" id="panel1">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+        <a data-toggle="collapse" data-target="#collapseOne" 
+           href="#collapseOne">
+          Data Extensions
+        </a>
+      </h4>
+
+          </div>
+          <div id="collapseOne" class="panel-collapse collapse ">
+            <div class="panel-body" id="results" style="height:400px; overflow-y:auto;"></div>
+          </div>
+        </div>
+        
+        
+        <div class="panel panel-default" id="panel2">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-target="#collapseThree" 
+                 href="#collapseThree" class="collapsed">
+                Data Views
+              </a>
+            </h4>
+
+          </div>
+          <div id="collapseThree" class="panel-collapse collapse">
+            <div class="panel-body" id="views" style="height:100; overflow:scroll;">
+              <a type='button' class='btn btn-xs btn-link dvLink' columns="AccountID,	OYBAccountID,	JobID,	ListID,	BatchID,	SubscriberID,	SubscriberKey,	EventDate,	Domain,	TriggeredSendDefinitionObjectID,	TriggeredSendCustomerKey,"  alias='s' name='_sent' customerKey='sent' style='text-decoration:none;' id='dv_sent'>_sent</a></br>
+              <a type='button' class='btn btn-xs btn-link dvLink' columns="AccountID,	OYBAccountID,	JobID,	ListID,	BatchID,	SubscriberID,	SubscriberKey,	EventDate,	Domain,	IsUnique,	TriggererSendDefinitionObjectID,	TriggeredSendCustomerKey,"  alias='o' name='_open' customerKey='open' style='text-decoration:none;' id='dv_open'>_open</a></br>
+              <a type='button' class='btn btn-xs btn-link dvLink' columns="AccountID,	OYBAccountID,	JobID,	ListID,	BatchID,	SubscriberID,	SubscriberKey,	EventDate,	Domain,	URL,	LinkName,	LinkContent,	IsUnique,	TriggeredSendDefinitionObjectID,	TriggeredSendCustomerKey,"  alias='c' name='_click' customerKey='click' style='text-decoration:none;' id='dv_click'>_click</a></br>
+              <a type='button' class='btn btn-xs btn-link dvLink' columns="AccountID,	OYBAccountID,	JobID,	ListID,	BatchID,	SubscriberID,	SubscriberKey,	EventDate,	IsUnique,	Domain,"  alias='u' name='_unsubscribe' customerKey='unsubscribe' style='text-decoration:none;' id='dv_unsubscribe'>_unsub</a></br>
+              <a type='button' class='btn btn-xs btn-link dvLink' columns="AccountID,	OYBAccountID,	JobID,	ListID,	BatchID,	SubscriberID,	SubscriberKey,	EventDate,	IsUnique,	Domain,	BounceCategoryID,	BounceCategory,	BounceSubcategoryID,	BounceSubcategory,	BounceTypeID,	BounceType,	SMTPBounceReason,	SMTPMessage,	SMTPCode,	TriggererSendDefinitionObjectID,	TriggeredSendCustomerKey"  alias='b' name='_bounce' customerKey='bounce' style='text-decoration:none;' id='dv_bounce'>_bounce</a></br>
+            </div>
+          </div>
+        </div>
+        
+        
+        
+        <div class="panel panel-default" id="panel2">
+          <div class="panel-heading">
+            <h4 class="panel-title">
+              <a data-toggle="collapse" data-target="#collapseTwo" 
+                 href="#collapseTwo" class="collapsed">
+                 Fields
+              </a>
+            </h4>
+
+          </div>
+          <div id="collapseTwo" class="panel-collapse collapse">
+            <div class="panel-body" id="fields" style="height:100; overflow:scroll;">
+              <img src="/img/ajax-loader.gif"/ style="display:none;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="col-md-9">
+
+
+      <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+          <br/>
+          <form id="sqlForm" action="/CreateQuery" method="POST">
+            <div class="form-group">
+              <input type="text" class="form-control" id="nameCustKey" name="nameCustKey" placeholder="Query Name">
+              <br>
+              <input type="text" class="form-control" id="description" name="description" placeholder="Query Description">
+              <br>
+              <textarea id="queryText" name="queryText" cols="118" rows="15">select &#13;from </textarea>
+              <br>
+            </div>
+            <button type="submit" class="btn btn-success">Submit</button>
+          </form>
+          <br>
+          <div id="results">
+            
+          </div>
+          <div id="statusMessage">
+            <p style="text-decoration:underline; font-weight:bold;">{{{StatusCode}}}</p>
+            <p style="font-weight:bold;">{{{StatusMessage}}}</p>
+          </div>
+
+        </div>
+        <div id="menu1" class="tab-pane fade">
+
+          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+<div id="results2">
+  {{uiObjects}}
+</div>
+

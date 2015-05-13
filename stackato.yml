@@ -1,0 +1,9 @@
+name: samplenodeapp
+instances: 1
+mem: 256
+disk: 256M
+ignores: ["coverage", "test", "src", "*.iml", "README.md", "karma.conf.js", ".idea", ".gitignore", ".jshintrc", "node_modules", "npm-debug.log", "package"]
+hooks:
+  pre-staging:
+    - npm config set production true
+    - npm config set registry http://npm.xexacttargetapps.com

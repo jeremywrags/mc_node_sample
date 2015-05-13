@@ -1,0 +1,15 @@
+{
+    "name": "samplenodeapp",
+    "version": "0.1.0",
+    "description": "Sample app",
+    "private": true,
+    "location": "git@github.exacttarget.com:MarketingCloudDev/derelicte-campaign.git",
+    "authors": ["Jeremy Ragsdale <jragsdale@salesforce.com>"],
+    "dependencies": {
+        "requirejs": "requirejs#2.1.9",
+        "jquery": "jquery#1.10.2",
+        "backbone": "backbone#1.1.0",
+        "underscore": "underscore#1.5.2",
+        "json2": "#*"
+    }
+}
