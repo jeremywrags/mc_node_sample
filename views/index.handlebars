@@ -63,13 +63,16 @@ function init() {
           arr.push(obj);
 
 
-          for (var i = 0; i < items.length; i++) {
+          //for (var i = 0; i < items.length; i++) {
+          for (var i = 0; i < 10; i++) {
             if (items[i].ParentFolder.ID != 0) {
               var obj = new Object();
               obj.id = items[i].ID;
               obj.parent = items[i].ParentFolder.ID;
               obj.text = items[i].Name;
               arr.push(obj);
+            }else{
+              console.log(items[i].Name);
             }
           }
 
