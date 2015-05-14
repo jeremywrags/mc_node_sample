@@ -17,82 +17,248 @@
 
 <script>
 $(document).ready(function() {
-  
-  //alert("{{QueryTaskID}}");
-  
-  $(document).on('click', '.deLink .dvlink', function(){
-        $( "#loading" ).css("display", "block")
+
+
+  //Initialize the Application
+  init();
+
+  //helper function to setup events
+  clickEvents();
+  doubleClickEvents();
+  otherEvents();
+
+
+  $("#sqlForm").submit(function(event) {
+
+    var qt = $("#queryText").text();
+    if (qt.indexOf("select") > 0) {
+      alert('SFMC queries must begin with "select"')
+      event.preventDefault();
+    }
+
   });
-  
-  $( document ).ajaxComplete(function() {
-    $( "#loading" ).css("display", "none")
+
+  $("#collapseOne").on('show.bs.collapse', function(e) {
+    $("#collapseTwo").collapse('hide');
   });
+
+});
+
+function init() {
   
-  $("#sqlForm").submit(function(event){
-    
-      var qt = $("#queryText").text();
-      if(qt.indexOf("select") > 0)
-      {
-        alert('SFMC queries must begin with "select"')
-        event.preventDefault();
-      }
-    
-  });
-  
-  $.ajax({
-    url: '/delist',
-    type: 'GET',
-    success: function(data) {
-      var deList= data[1];
-      var FolderList = data[0];
+  var clickedNodes = [];
+      var aliasCounter = 0;
       
+      $.ajax({
+        url: '/GetFolders',
+        type: 'post',
+        success: function(items) {
+
+          var arr = [];
+
+          var obj = new Object();
+          obj.id = 1040721;
+          obj.parent = "#";
+          obj.text = "Data Extensions";
+          arr.push(obj);
+
+
+          for (var i = 0; i < items.length; i++) {
+            if (items[i].ParentFolder.ID != 0) {
+              var obj = new Object();
+              obj.id = items[i].ID;
+              obj.parent = items[i].ParentFolder.ID;
+              obj.text = items[i].Name;
+              arr.push(obj);
+            }
+          }
+
+          $('#tree')
+            .jstree({
+              "core": {
+                "animation": 0,
+                "check_callback": true,
+                "themes": {
+                  "stripes": true
+                },
+                'data': arr
+              },
+              "plugins": ["contextmenu", "dnd", "search", "types", "wholerow"],
+              "contextmenu": {
+                "items": function($node) {
+                  var tree = $("#tree").jstree(true);
+                  return {
+                    "Create": {
+                      "separator_before": false,
+                      "separator_after": false,
+                      "label": "Create",
+                      "action": function(obj) {
+                        $node = tree.create_node($node);
+                        tree.edit($node);
+                      }
+                    }
+                  };
+                }
+              }
+            }).bind("rename_node.jstree", function (e, data) {
+              //Create New Folder using the following attributes
+              var tree = $("#tree").jstree(true);
+              
+              $.ajax({
+                url: '/CreateFolder',
+                data: {
+                  FolderName: data.text, 
+                  ParentID: data.node.parent
+                  
+                },
+                type: 'POST',
+                success: function(response) {
+                  tree.set_id(data.node,  response[0].NewID);
+                }
+              });
+            }).bind("select_node.jstree open_node.jstree", function(e, data){
+              var tree = $("#tree").jstree(true);
+              console.log(data);
+              tree.open_node(data.node);
+              //toggleNode(data.node);
+              
+              //Check if the current Node is already in the list of Clicked nodes.
+              //This is to prevent duplicating the list of DE's in a folder
+              //We also need to check to see if the nodeType is de so that we can not make the ajax
+              // call for non folder objects
+              if(clickedNodes.indexOf(data.node.id) >= 0 || data.node.a_attr.nodeType == 'de')
+              {
+                
+              }
+              else{
+                
+                clickedNodes.push(data.node.id)
+                $.ajax({
+                  url: '/GetObjects',
+                  data: {
+                    ParentFolderID: data.node.id 
+                  },
+                  type: 'POST',
+                  success: function(items) {
+                    for(var i=0; i < items.length; i++)
+                    {
+                        tree.create_node(data.node, { text: items[i].Name, a_attr : { nodeType: "de",  alias: "tbl" + ++aliasCounter, customerKey: items[i].Name, name: items[i].Name, class: "deLink"},  icon : "-"}, 'last');
+                    }
+                  }
+                });
+              }
+            });
+
+        }
+      });
+  /*$.ajax({
+    url: '/GetFoldersAndObjects',
+    type: 'post',
+    success: function(data) {
+      var deList = data;
+      //var FolderList = data[0];
+
       $('#results').html("");
       for (var i = 0; i < deList.length; i++) {
         $('#results').append("<a type='button' class='btn btn-xs btn-link deLink' alias='tbl" + i + "' name='" + deList[i].Name + "' customerKey='" + deList[i].CustomerKey + "' style='text-decoration:none;' id='de_" + deList[0].Name + "'>" + deList[i].Name + "</a></br>");
       }
-      
-      var arr = [];
-      
-      var obj = new Object();
-      obj.id = 1040721;
-      obj.parent = "#";
-      obj.text = "Data Extensions";
-      arr.push(obj);
-        
-      for (var i = 0; i < FolderList.length; i++) {
-        
-        var obj = new Object();
-        obj.id = FolderList[i].ID;
-        obj.parent = FolderList[i].ParentFolder.ID;
-        obj.text = FolderList[i].Name;
-        arr.push(obj);
-      }
-      
-      for (var i = 0; i < deList.length; i++) {
-        var obj = new Object();
-        obj.id = deList[i].Name;
-        obj.parent = 1040721;
-        obj.icon = "test"
-        obj.text = deList[i].Name;
-        arr.push(obj);
-      }
-      
-      
-      
-      /*$('#results2').jstree({ 
-        'core' : 
-        {
-          'data' : arr
-        }
-      });*/
     }
   });
+  */
+}
+
+function toggleNode(node)
+{
+  console.log(node);
+  var tree = $("#tree").jstree(true);
+  
+  if(node.state.opened){
+     tree.close_node(node);
+  }else{
+    tree.open_node(node);
+  }
     
-    
-  $(document).on('blur', '#nameCustKey', function(){  
-    
-    if($(this).val() != "")
-    {
+}
+function clickEvents() {
+  
+
+  
+  $(document.body).on('click', '.dvLink', function() {
+
+    $("#collapseTwo").collapse('show');
+    var cols = $(this).attr("columns").split(",");
+    $('#fields').html("");
+    for (var i = 0; i < cols.length; i++) {
+      $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + $(this).attr("alias") + "' name='" + cols[i] + "' customerKey='" + cols[i] + "' style='text-decoration:none;' id='de_" + cols[i] + "'>" + cols[i] + "</a></br>");
+    }
+  });
+
+  $(document.body).on('click', '.deLink', function() {
+
+    $("#collapseTwo").collapse('show');
+    var temp = $(this);
+    var columns = "";
+    var cKey = $(this).attr("customerKey");
+    $.ajax({
+      url: '/deFieldlist',
+      data: {
+        customerKey: cKey
+      },
+      type: 'POST',
+      success: function(items) {
+        $('#fields').html("");
+        for (var i = 0; i < items.length; i++) {
+          $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + temp.attr("alias") + "' name='" + items[i].Name + "' customerKey='" + items[i].Name + "' style='text-decoration:none;' id='de_" + items[i].Name + "'>" + items[i].Name + "</a></br>");
+          columns += items[i].Name + ",";
+        }
+        $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' columns='" + columns.substring(0, columns.length - 1) + "' alias='" + temp.attr("alias") + "' name='star' customerKey='star' style='text-decoration:none;' id='de_star'>*</a></br>");
+      }
+    });
+  });
+}
+
+function doubleClickEvents() {
+  $(document).on('dblclick', '.fieldLink', function() {
+    var name = $(this).attr("name");
+    var alias = $(this).attr("alias");
+
+    if ("star" === name) {
+      var columns = $(this).attr("columns").split(",");
+      for (var i = 0; i <= columns.length; i++)
+        if (i < columns.length - 1)
+          $("#queryText").insertAtCaret(alias + "." + columns[i].trim() + ", ", "back");
+        else
+          $("#queryText").insertAtCaret(alias + "." + columns[i].trim(), "back");
+    }
+    else
+      $("#queryText").insertAtCaret(alias + "." + name.trim(), "back");
+
+  });
+
+  $(document).on('dblclick', '.deLink', function() {
+    var name = $(this).attr("name");
+    var alias = $(this).attr("alias");
+    $("#queryText").insertAtCaret(name + " as " + alias, "front");
+
+  });
+
+  $(document).on('dblclick', '.dvLink', function() {
+    var name = $(this).attr("name");
+    var alias = $(this).attr("alias");
+    $("#queryText").insertAtCaret(name + " as " + alias, "front");
+
+  });
+}
+
+
+function otherEvents() {
+
+  $('#treeContainer').on('show.bs.collapse', function(e) {
+
+  });
+
+  $(document).on('blur', '#nameCustKey', function() {
+    if ($(this).val() != "") {
       var textBox = $(this);
       $.ajax({
         url: '/nameCheck',
@@ -102,124 +268,54 @@ $(document).ready(function() {
           objType: "dataextension"
         },
         success: function(items) {
-          if(items.length > 0)
-          {
+          if (items.length > 0) {
             textBox.val("");
             textBox.focus();
             alert("The choosen name has already been used, please enter a new name.")
           }
         }
-      });  
-    }
-  });
-    
-  $(document).on('dblclick', '.fieldLink', function(){
-            var name = $(this).attr("name");
-            var alias = $(this).attr("alias");
-            
-            if("star" === name)
-            {
-              var columns = $(this).attr("columns").split(",");
-              for(var i = 0; i <= columns.length; i ++)
-                if(i < columns.length -1)
-                  $("#queryText").insertAtCaret(alias + "." + columns[i].trim() + ", ", "back");
-                else
-                  $("#queryText").insertAtCaret(alias + "." + columns[i].trim(), "back");
-            }
-            else
-              $("#queryText").insertAtCaret(alias + "." + name.trim(), "back");
-            
-  });
-  
-  $(document).on('dblclick', '.deLink', function(){
-            var name = $(this).attr("name");
-            var alias = $(this).attr("alias");
-            $("#queryText").insertAtCaret(name + " as " + alias, "front");
-            
-  });
-  
-  $(document).on('dblclick', '.dvLink', function(){
-            var name = $(this).attr("name");
-            var alias = $(this).attr("alias");
-            $("#queryText").insertAtCaret(name + " as " + alias, "front");
-            
-  });
-  
-  $("#collapseOne").on('show.bs.collapse', function (e) {
-      $("#collapseTwo").collapse('hide');
-  });
-  
-  
-  
-  $(document.body).on('click', '.deLink', function() {
-    
-    $("#collapseTwo").collapse('show');
-    var temp = $(this);
-    var columns = "";
-    var cKey = $(this).attr("customerKey");
-    $.ajax({
-      url: '/deFieldlist',
-      data: { customerKey: cKey},
-      type: 'POST',
-      success: function(items) {
-        $('#fields').html("");
-        for (var i = 0; i < items.length; i++) {
-          $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + temp.attr("alias") + "' name='" + items[i].Name + "' customerKey='" + items[i].Name + "' style='text-decoration:none;' id='de_" + items[i].Name + "'>" + items[i].Name + "</a></br>");
-          columns += items[i].Name + ",";
-        }
-        $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' columns='" + columns.substring(0, columns.length-1) + "' alias='" + temp.attr("alias") + "' name='star' customerKey='star' style='text-decoration:none;' id='de_star'>*</a></br>");
-      }
-    });  
-  });
-  
-  $(document.body).on('click', '.dvLink', function() {
-    
-    $("#collapseTwo").collapse('show');
-    var cols = $(this).attr("columns").split(",");
-    $('#fields').html("");
-    for(var i=0; i<cols.length; i++)
-    {
-      $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + $(this).attr("alias") + "' name='" + cols[i] + "' customerKey='" + cols[i]  + "' style='text-decoration:none;' id='de_" + cols[i]  + "'>" + cols[i] + "</a></br>");
-    }
-  });
-});
-
-
-jQuery.fn.extend({
-insertAtCaret: function(myValue){
-  return this.each(function(i) {
-    if (document.selection) {
-      //For browsers like Internet Explorer
-      this.focus();
-      var sel = document.selection.createRange();
-      sel.text = myValue;
-      this.focus();
-    }
-    else if (this.selectionStart || this.selectionStart == '0') {
-      //For browsers like Firefox and Webkit based
-      var startPos = this.selectionStart;
-      var endPos = this.selectionEnd;
-      var scrollTop = this.scrollTop;
-      this.value = this.value.substring(0, startPos)+myValue+this.value.substring(endPos,this.value.length);
-      this.focus();
-      this.selectionStart = startPos + myValue.length;
-      this.selectionEnd = startPos + myValue.length;
-      this.scrollTop = scrollTop;
-    } else {
-      this.value += myValue;
-      this.focus();
+      });
     }
   });
 }
-});
 
+
+
+jQuery.fn.extend({
+  insertAtCaret: function(myValue) {
+    return this.each(function(i) {
+      if (document.selection) {
+        //For browsers like Internet Explorer
+        this.focus();
+        var sel = document.selection.createRange();
+        sel.text = myValue;
+        this.focus();
+      }
+      else if (this.selectionStart || this.selectionStart == '0') {
+        //For browsers like Firefox and Webkit based
+        var startPos = this.selectionStart;
+        var endPos = this.selectionEnd;
+        var scrollTop = this.scrollTop;
+        this.value = this.value.substring(0, startPos) + myValue + this.value.substring(endPos, this.value.length);
+        this.focus();
+        this.selectionStart = startPos + myValue.length;
+        this.selectionEnd = startPos + myValue.length;
+        this.scrollTop = scrollTop;
+      }
+      else {
+        this.value += myValue;
+        this.focus();
+      }
+    });
+  }
+});
 
 </script>
 <div class="container">
 
 
   <div class="row">
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="panel-group" id="accordion">
         <div class="panel panel-default" id="panel1">
           <div class="panel-heading">
@@ -232,7 +328,7 @@ insertAtCaret: function(myValue){
 
           </div>
           <div id="collapseOne" class="panel-collapse collapse ">
-            <div class="panel-body" id="results" style="height:400px; overflow-y:auto;"></div>
+            <div class="panel-body" id="tree" style="height:400px; overflow-y:auto;"></div>
           </div>
         </div>
         
@@ -279,7 +375,7 @@ insertAtCaret: function(myValue){
       </div>
 
     </div>
-    <div class="col-md-9">
+    <div class="col-md-7">
 
 
       <div class="tab-content">
@@ -290,6 +386,16 @@ insertAtCaret: function(myValue){
               <input type="text" class="form-control" id="nameCustKey" name="nameCustKey" placeholder="Query Name">
               <br>
               <input type="text" class="form-control" id="description" name="description" placeholder="Query Description">
+              <br>
+              <table>
+                <tr>
+                  <td style="color:#666; vertical-align:top;">Folder</td>
+                  <td>
+                    
+                  </td>
+                </tr>
+              </table>
+              <br>
               <br>
               <textarea id="queryText" name="queryText" cols="118" rows="15">select &#13;from </textarea>
               <br>
@@ -306,17 +412,12 @@ insertAtCaret: function(myValue){
           </div>
 
         </div>
-        <div id="menu1" class="tab-pane fade">
-
-          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        </div>
+        
 
       </div>
     </div>
 
   </div>
 </div>
-<div id="results2">
-  {{uiObjects}}
-</div>
+
 

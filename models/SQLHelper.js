@@ -87,8 +87,8 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
         });
     },
     function GetObjects(callback) { 
-        //etHelper.de_findByParent(parentID, function(err, response, parentID) {
-        etHelper.de_retrieveAll(function(err, response, parentID) {
+        etHelper.de_findByParent(parentID, function(err, response, parentID) {
+        //etHelper.de_retrieveAll(function(err, response, parentID) {
             if (err) {
 				callback(err, null);
 			}
@@ -107,6 +107,45 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
 		}
 	});
 };
+
+SQLHelper.prototype.GetObjects  = function(req, parentID, callback) { 
+	etHelper.init(req); 
+	
+    etHelper.de_findByParent(parentID, function(err, response) {
+        if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+    });
+    
+};
+
+SQLHelper.prototype.GetFolders  = function(req, parentID, callback) { 
+	etHelper.init(req); 
+    etHelper.folder_retrieveAll("dataextension", function(err, response) {
+        if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+    });
+};
+
+SQLHelper.prototype.CreateFolder  = function(req, callback) { 
+	etHelper.init(req); 
+    etHelper.folder_create("dataextension", req.body.FolderName, req.body.ParentID, function(err, response) {
+        if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+    });
+};
+
 
 SQLHelper.prototype.deField_list = function(req, callback) { 
 	etHelper.init(req); 

@@ -130,14 +130,31 @@ module.exports = function(server) {
 		}
 	});
 
-	server.get('/delist', function(req, res) {
-		//sqlHelper.de_retrieveAll(req, function(err, results) {
-		//	res.send(results);
+	server.post('/GetFoldersAndObjects', function(req, res) {
+		sqlHelper.de_retrieveAll(req, function(err, results) {
+			res.send(results);
+		});
+		
+		//sqlHelper.GetFoldersAndObjects(req, req.session.ParentDEFolderID, function(err, response){
+		//			res.send(response);
 		//});
-		
-		
-		sqlHelper.GetFoldersAndObjects(req, req.session.ParentDEFolderID, function(err, response){
-					res.send(response);
+	});
+	
+	server.post('/GetFolders', function(req, res) {
+		sqlHelper.GetFolders(req, req.session.ParentDEFolderID, function(err, response){
+			res.send(response);
+		});
+	});
+	
+	server.post('/CreateFolder', function(req, res) {
+		sqlHelper.CreateFolder(req, function(err, response){
+			res.send(response);
+		});
+	});
+	
+	server.post('/GetObjects', function(req, res) {
+		sqlHelper.GetObjects(req, req.body.ParentFolderID, function(err, response){
+			res.send(response);
 		});
 	});
 	

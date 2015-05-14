@@ -10,7 +10,6 @@ var req;
 function ETHelper() {
 
 }
-
 ETHelper.prototype.init = function(request) {
 	
 	req = request;
@@ -49,7 +48,6 @@ ETHelper.prototype.folder_findByParent = function(parentID, callback) {
 		}
 	});
 };
-
 ETHelper.prototype.folder_retrieveAll = function(type, callback) {
 	
 	var parms = {
@@ -102,8 +100,6 @@ ETHelper.prototype.folder_findByNameType = function(type, name, callback) {
 		}
 	});
 };
-
-//Get a Parent folder by Type ie. dataextension, queryactivity, portfolio
 ETHelper.prototype.folder_findParentByType = function(type, callback) {
 
 	//Setup the DEFolder Lookup Filter
@@ -135,7 +131,6 @@ ETHelper.prototype.folder_findParentByType = function(type, callback) {
 		}
 	});
 };
-
 ETHelper.prototype.folder_findByNameParent = function(name, parentID, callback) {
 
 	//Setup the DEFolder Lookup Filter
@@ -167,7 +162,6 @@ ETHelper.prototype.folder_findByNameParent = function(name, parentID, callback) 
 		}
 	});
 };
-
 ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback) {
 
 	var newFolderParms = {
@@ -192,6 +186,13 @@ ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback
 
 	this.create(newFolderParms, SoapClient, function(err, response) {
 		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+		/*
+		if (err) {
 			console.log("ERROR: " + err.code + " (" + err.message + ")");
 			return;
 		}
@@ -212,6 +213,7 @@ ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback
 				Name: name,
 				ID: null
 			});
+			*/
 	});
 };
 
@@ -245,7 +247,6 @@ ETHelper.prototype.de_create = function(fields, callback) {
 		}
 	});
 };
-
 ETHelper.prototype.de_delete = function(callback) {
 
 	var parms = {
@@ -268,7 +269,6 @@ ETHelper.prototype.de_delete = function(callback) {
 		}
 	});
 };
-
 ETHelper.prototype.de_findByParent = function(parentID, callback) { 
 
 	var parms = {
@@ -290,7 +290,6 @@ ETHelper.prototype.de_findByParent = function(parentID, callback) {
 		}
 	});
 };
-
 ETHelper.prototype.deField_list = function(customerKey, callback) {
 	var parms = {
 		objectType: "DataExtensionField",
@@ -309,6 +308,23 @@ ETHelper.prototype.deField_list = function(customerKey, callback) {
 			return;
 		}
 		callback(null, response);
+	});
+};
+ETHelper.prototype.de_retrieveAll = function(callback) {
+	
+	var parms = {
+		objectType: "dataextension",
+		props: ["Name", "CustomerKey", "CategoryID"],
+		filter: "",
+		options: {}
+	};
+	
+	this.listAll(parms, SoapClient, function(err, response) {
+			if (err) {
+				console.log("ERROR: " + err.code + " (" + err.message + ")");
+				return;
+			}
+			callback(null, response);
 	});
 };
 
@@ -330,25 +346,6 @@ ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
 			return;
 		}
 		callback(null, response);
-	});
-};
-
-//Retrieve all data extension Objects
-ETHelper.prototype.de_retrieveAll = function(callback) {
-	
-	var parms = {
-		objectType: "dataextension",
-		props: ["Name", "CustomerKey", "CategoryID"],
-		filter: "",
-		options: {}
-	};
-	
-	this.listAll(parms, SoapClient, function(err, response) {
-			if (err) {
-				console.log("ERROR: " + err.code + " (" + err.message + ")");
-				return;
-			}
-			callback(null, response);
 	});
 };
 
@@ -374,7 +371,6 @@ ETHelper.prototype.query_status = function(taskID, callback) {
 		}
 	});
 };
-
 ETHelper.prototype.query_create = function(callback) {
 
 	var parms = {
@@ -408,7 +404,6 @@ ETHelper.prototype.query_create = function(callback) {
 		}
 	});
 };
-
 ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 
 	var parms = {
@@ -450,7 +445,6 @@ ETHelper.prototype.listAll = function(parms, SoapClient, callback) {
 		}
 	);
 };
-
 ETHelper.prototype.listAllByCategoryID = function(parms, SoapClient, callback) {
 
 	SoapClient.retrieve(
@@ -483,7 +477,6 @@ ETHelper.prototype.getByName = function(parms, SoapClient, callback) {
 		}
 	);
 };
-
 ETHelper.prototype.getByCustomerKey = function(parms, SoapClient, callback) {
 
 	SoapClient.retrieve(
@@ -516,7 +509,6 @@ ETHelper.prototype.retrieve = function(parms, callback) {
 		}
 	);
 };
-
 ETHelper.prototype.create = function(parms, SoapClient, callback) {
 	SoapClient.create(parms.objectType,	parms.props, parms.options, function(err, response) {
 			if (err) {
@@ -528,7 +520,6 @@ ETHelper.prototype.create = function(parms, SoapClient, callback) {
 		}
 	);
 };
-
 ETHelper.prototype.delete = function(parms, SoapClient, callback) {
 	SoapClient.delete(parms.objectType,	parms.props, parms.options, function(err, response) {
 			if (err) {
@@ -540,7 +531,6 @@ ETHelper.prototype.delete = function(parms, SoapClient, callback) {
 		}
 	);
 };
-
 ETHelper.prototype.perform = function(parms, SoapClient, callback) {
 	SoapClient.perform(
 		parms.objectType,
@@ -559,21 +549,5 @@ ETHelper.prototype.perform = function(parms, SoapClient, callback) {
 
 //******************** End Iterface to standard ET SOAP Methods ****************************//
 
-//*********************** 		Local Helper Methods 			****************************//
-
-ETHelper.prototype.parseSql = function(q) {
-	var query = q.toLowerCase();
-	var fields = query.substring(query.indexOf("Select") + 7, query.indexOf("from")).split(",");
-
-	for (var i = 0; i < fields.length; i++) {
-		if (fields[i].indexOf("as") > 0) {
-			fields[i] = fields[i].substring(fields[i].indexOf("as") + 3);
-		}
-	}
-
-	return fields;
-};
-
-//******************** 		End Local Helper Methods 			****************************//
 
 module.exports = ETHelper;
