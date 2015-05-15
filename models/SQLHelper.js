@@ -76,8 +76,8 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
 	
 	async.parallel([
     function GetFolders(callback) { 
-        //etHelper.folder_findByParent(parentID, function(err, response, parentID) {
-        etHelper.folder_retrieveAll("dataextension", function(err, response, parentID) {
+        etHelper.folder_findByParent(parentID, function(err, response, parentID) {
+        //etHelper.folder_retrieveAll("dataextension", function(err, response, parentID) {
             if (err) {
 				callback(err, null);
 			}

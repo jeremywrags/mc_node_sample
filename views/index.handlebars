@@ -55,26 +55,25 @@ function init() {
         success: function(items) {
 
           var arr = [];
-
           var obj = new Object();
+          
           obj.id = 1040721;
           obj.parent = "#";
           obj.text = "Data Extensions";
           arr.push(obj);
 
-
-          //for (var i = 0; i < items.length; i++) {
-          for (var i = 0; i < 10; i++) {
+          console.log(items.length);
+          for (var i = 0; i < items.length; i++) {
             if (items[i].ParentFolder.ID != 0) {
               var obj = new Object();
               obj.id = items[i].ID;
               obj.parent = items[i].ParentFolder.ID;
               obj.text = items[i].Name;
               arr.push(obj);
-            }else{
-              console.log(items[i].Name);
             }
           }
+          
+          console.log(arr.length);
 
           $('#tree')
             .jstree({
@@ -103,7 +102,7 @@ function init() {
                   };
                 }
               }
-            });/*.bind("rename_node.jstree", function (e, data) {
+            }).bind("rename_node.jstree", function (e, data) {
               //Create New Folder using the following attributes
               var tree = $("#tree").jstree(true);
               
@@ -150,7 +149,7 @@ function init() {
                   }
                 });
               }
-            });*/
+            });
 
         }
       });
@@ -422,5 +421,6 @@ jQuery.fn.extend({
 
   </div>
 </div>
+<div id="output"></div>
 
 
