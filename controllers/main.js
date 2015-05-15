@@ -141,7 +141,7 @@ module.exports = function(server) {
 	});
 	
 	server.post('/GetFolders', function(req, res) {
-		console.log("Calling Get Folders: ParentID - " + req.session.ParentDEFolderID)
+		console.log("Calling Get Folders: ParentID - " + req.session.ParentDEFolderID);
 		sqlHelper.GetFolders(req, req.session.ParentDEFolderID, function(err, response){
 			res.send(response);
 		});

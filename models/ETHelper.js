@@ -48,8 +48,35 @@ ETHelper.prototype.folder_findByParent = function(parentID, callback) {
 		}
 	});
 };
+
+ETHelper.prototype.folder_retrieve = function(type, callback){
+
+	console.log("Inside retrieve  for Type= " + type);
+
+	var parms = {
+		objectType: "DataFolder",
+		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
+		filter:{
+			leftOperand: 'ContentType',
+			operator: 'equals',
+			rightOperand: type
+		}
+	};
+	
+	this.retrieve(parms, function(err, response){
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+
 ETHelper.prototype.folder_retrieveAll = function(type, callback) {
 	
+ 	console.log("Inside retrieve all for Type= " + type);
+
 	var parms = {
 		objectType: "DataFolder",
 		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
@@ -191,29 +218,6 @@ ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback
 		else{
 			callback(null, response);
 		}
-		/*
-		if (err) {
-			console.log("ERROR: " + err.code + " (" + err.message + ")");
-			return;
-		}
-
-		if (response.length > 0)
-			callback(null, {
-				Status: "OK",
-				Message: "Folder Created",
-				Type: type,
-				Name: name,
-				ID: response[0].NewID
-			});
-		else
-			callback(null, {
-				Status: "Warning",
-				Message: "Folder Not Created",
-				Type: type,
-				Name: name,
-				ID: null
-			});
-			*/
 	});
 };
 
