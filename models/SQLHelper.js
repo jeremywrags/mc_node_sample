@@ -15,8 +15,6 @@ var errorHandler = require('et-express-error-handlers');
 function SQLHelper() {
 
 }
-
-// This is the init function that ensures that the required Folders are present
 SQLHelper.prototype.init = function(req, name, callback) {
 	
 	//instansiate the return object
@@ -58,8 +56,6 @@ SQLHelper.prototype.init = function(req, name, callback) {
 		}
 	});
 };
-
-//Return a list of All Data Extension from the ET helper
 SQLHelper.prototype.de_retrieveAll = function(req, callback) { 
 	etHelper.init(req); 
 	etHelper.de_retrieveAll(function(err, response){
@@ -70,7 +66,6 @@ SQLHelper.prototype.de_retrieveAll = function(req, callback) {
 		callback(null, response);
 	});
 };
-
 SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) { 
 	etHelper.init(req); 
 	
@@ -105,7 +100,6 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
 		}
 	});
 };
-
 SQLHelper.prototype.GetObjects  = function(req, parentID, callback) { 
 	etHelper.init(req); 
 	
@@ -119,10 +113,9 @@ SQLHelper.prototype.GetObjects  = function(req, parentID, callback) {
     });
     
 };
-
 SQLHelper.prototype.GetFolders  = function(req, parentID, callback) { 
+
 	etHelper.init(req); 
-	console.log("About to call folder_retrieveall data extension folders");
     etHelper.folder_retrieve("dataextension", function(err, response) {
         if (err) {
 			callback(err, null);
@@ -132,7 +125,6 @@ SQLHelper.prototype.GetFolders  = function(req, parentID, callback) {
 		}
     });
 };
-
 SQLHelper.prototype.CreateFolder  = function(req, callback) { 
 	etHelper.init(req); 
     etHelper.folder_create("dataextension", req.body.FolderName, req.body.ParentID, function(err, response) {
@@ -144,19 +136,17 @@ SQLHelper.prototype.CreateFolder  = function(req, callback) {
 		}
     });
 };
-
-
 SQLHelper.prototype.deField_list = function(req, callback) { 
 	etHelper.init(req); 
 	etHelper.deField_list(req.body.customerKey, function(err, response){
 		if (err) {
-			console.log("ERROR: " + err.code + " (" + err.message + ")");
-			return;
+			callback(err, null);
 		}
-		callback(null, response);
+		else{
+			callback(null, response);
+		}
 	});
 };
-
 SQLHelper.prototype.query_status = function(req, callback) { 
 	etHelper.init(req); 
 	etHelper.query_status(req.body.taskID, function(err, response){
@@ -167,19 +157,18 @@ SQLHelper.prototype.query_status = function(req, callback) {
 		callback(null, response);
 	});
 };
-
 SQLHelper.prototype.nameCheck = function(req, callback) { 
 
 	etHelper.init(req); 
 	etHelper.nameCheck (req.body.customerKey, req.body.objType, function(err, response){
 		if (err) {
-			console.log("ERROR: " + err.code + " (" + err.message + ")");
-			return;
+			callback(err, null);
 		}
-		callback(null, response);
+		else{
+			callback(null, response);
+		}
 	});
 };
-
 SQLHelper.prototype.createQuery = function(req, callback) {
 
 	etHelper.init(req); 
@@ -245,7 +234,6 @@ SQLHelper.prototype.createQuery = function(req, callback) {
 		}
 	});
 };
-
 function parseSQL(query) {
 
 	query = query.replace("distinct", "").toLowerCase();
@@ -279,8 +267,6 @@ function parseSQL(query) {
 
 	return outFields;
 }
-
-//Gets the Folder that the App should store it's assests in
 function GetAppParentFolder(req, name, parentID, callback){
 	etHelper.init(req); 
 	etHelper.folder_findByNameParent(name, parentID, function(err, response) {
@@ -292,8 +278,6 @@ function GetAppParentFolder(req, name, parentID, callback){
 		}
 	});
 }
-
-//Get the parent folder by type
 function GetParentFolder(req, type, name, callback){
 	etHelper.init(req); 
 	etHelper.folder_findParentByType(type, function(err, response) {
@@ -305,7 +289,6 @@ function GetParentFolder(req, type, name, callback){
 		}
 	});
 }
-
 function CheckFolder(req, name, parentName, type, callback) {
 	async.waterfall([
     function GetDEParent(callback) { 

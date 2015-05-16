@@ -8,7 +8,6 @@ var SoapClient;
 var req;
 
 function ETHelper() {
-
 }
 ETHelper.prototype.init = function(request) {
 	
@@ -26,6 +25,7 @@ ETHelper.prototype.init = function(request) {
 	};
 	SoapClient = new FuelSoap(options);
 }
+
 ETHelper.prototype.folder_findByParent = function(parentID, callback) { 
 
 	var parms = {
@@ -50,8 +50,6 @@ ETHelper.prototype.folder_findByParent = function(parentID, callback) {
 	});
 };
 ETHelper.prototype.folder_retrieve = function(type, callback){
-
-	console.log("Inside retrieve  for Type= " + type);
 
 	var parms = {
 		objectType: "DataFolder",
@@ -283,20 +281,22 @@ ETHelper.prototype.deField_list = function(customerKey, callback) {
 	var parms = {
 		objectType: "DataExtensionField",
 		props: ["Name", "CustomerKey"],
-		filter: {
-			leftOperand: 'DataExtension.CustomerKey',
-			operator: 'equals',
-			rightOperand:  customerKey
-		},
-		options: {}
+		options: {
+			filter: {
+				leftOperand: 'DataExtension.CustomerKey',
+				operator: 'equals',
+				rightOperand:  customerKey
+			}
+		}
 	};	
 		
-	this.listAll(parms, SoapClient, function(err, response) {
+	this.retrieve(parms, function(err, response) {
 		if (err) {
-			console.log("ERROR: " + err.code + " (" + err.message + ")");
-			return;
+			callback(err, null);
 		}
-		callback(null, response);
+		else{
+			callback(null, response);
+		}
 	});
 };
 ETHelper.prototype.de_retrieveAll = function(callback) {
@@ -308,32 +308,35 @@ ETHelper.prototype.de_retrieveAll = function(callback) {
 		options: {}
 	};
 	
-	this.listAll(parms, SoapClient, function(err, response) {
-			if (err) {
-				console.log("ERROR: " + err.code + " (" + err.message + ")");
-				return;
-			}
-			callback(null, response);
+	this.retrieve(parms, function(err, response) {
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response[0]);
+		}
 	});
 };
 ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
 	var parms = {
 		objectType: objType,
 		props: ["Name"],
-		filter: {
-			leftOperand: 'CustomerKey',
-			operator: 'equals',
-			rightOperand:  customerKey
-		},
-		options: {}
+		options:{
+			filter: {
+				leftOperand: 'CustomerKey',
+				operator: 'equals',
+				rightOperand:  customerKey
+			}
+		}
 	};	
 		
-	this.listAll(parms, SoapClient, function(err, response) {
+	this.retrieve(parms, function(err, response){
 		if (err) {
-			console.log("ERROR: " + err.code + " (" + err.message + ")");
-			return;
+			callback(err, null);
 		}
-		callback(null, response);
+		else{
+			callback(null, response);
+		}
 	});
 };
 ETHelper.prototype.query_status = function(taskID, callback) {
@@ -409,44 +412,12 @@ ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 
 	this.perform(parms, SoapClient, function(err, response){
 		if (err) {
-			console.log("ERROR: " + err.code + " (" + err.message + ")");
-			return;
+			callback(err, null);
 		}
-		callback(null, response[0].Result);
+		else{
+			callback(null, response[0].Result);
+		}
 	});
-};
-ETHelper.prototype.listAll = function(parms, SoapClient, callback) {
-
-	SoapClient.retrieve(
-		parms.objectType,
-		parms.props,
-		parms.options,
-		function(err, response) {
-			if (err) {
-				// error here
-				console.log(err);
-				return;
-			}
-
-			callback(err, response.body.Results);
-		}
-	);
-};
-ETHelper.prototype.listAllByCategoryID = function(parms, SoapClient, callback) {
-
-	SoapClient.retrieve(
-		parms.objectType,
-		parms.props,
-		parms.options,
-		function(err, response) {
-			if (err) {
-				// error here
-				console.log(err);
-				return;
-			}
-			callback(err, response.body.Results);
-		}
-	);
 };
 ETHelper.prototype.getByName = function(parms, SoapClient, callback) {
 	SoapClient.retrieve(

@@ -19,6 +19,17 @@
 $(document).ready(function() {
 
 
+  $.ajaxSetup({
+    beforeSend:function(){
+        // show image here
+        $("#loading").show();
+    },
+    complete:function(){
+        // hide image here
+        $("#loading").hide();
+    }
+});
+
   //Initialize the Application
   init();
 
@@ -62,7 +73,6 @@ function init() {
           obj.text = "Data Extensions";
           arr.push(obj);
 
-          console.log(items.length);
           for (var i = 0; i < items.length; i++) {
             if (items[i].ParentFolder.ID != 0) {
               var obj = new Object();
@@ -72,8 +82,6 @@ function init() {
               arr.push(obj);
             }
           }
-          
-          console.log(arr.length);
 
           $('#tree')
             .jstree({
@@ -120,9 +128,6 @@ function init() {
               });
             }).bind("select_node.jstree open_node.jstree", function(e, data){
               var tree = $("#tree").jstree(true);
-              console.log(data);
-              tree.open_node(data.node);
-              //toggleNode(data.node);
               
               //Check if the current Node is already in the list of Clicked nodes.
               //This is to prevent duplicating the list of DE's in a folder
@@ -144,8 +149,9 @@ function init() {
                   success: function(items) {
                     for(var i=0; i < items.length; i++)
                     {
-                        tree.create_node(data.node, { text: items[i].Name, a_attr : { nodeType: "de",  alias: "tbl" + ++aliasCounter, customerKey: items[i].Name, name: items[i].Name, class: "deLink"},  icon : "-"}, 'last');
+                        tree.create_node(data.node, { text: items[i].Name, a_attr : { nodeType: "de",  alias: "tbl" + ++aliasCounter, customerKey: items[i].Name, name: items[i].Name, class: "deLink"},  icon : "/img/dbIcon.png"}, 'last');
                     }
+                    tree.open_node(data.node);
                   }
                 });
               }
@@ -153,20 +159,6 @@ function init() {
 
         }
       });
-  /*$.ajax({
-    url: '/GetFoldersAndObjects',
-    type: 'post',
-    success: function(data) {
-      var deList = data;
-      //var FolderList = data[0];
-
-      $('#results').html("");
-      for (var i = 0; i < deList.length; i++) {
-        $('#results').append("<a type='button' class='btn btn-xs btn-link deLink' alias='tbl" + i + "' name='" + deList[i].Name + "' customerKey='" + deList[i].CustomerKey + "' style='text-decoration:none;' id='de_" + deList[0].Name + "'>" + deList[i].Name + "</a></br>");
-      }
-    }
-  });
-  */
 }
 
 function toggleNode(node)
@@ -213,7 +205,7 @@ function clickEvents() {
           $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' alias='" + temp.attr("alias") + "' name='" + items[i].Name + "' customerKey='" + items[i].Name + "' style='text-decoration:none;' id='de_" + items[i].Name + "'>" + items[i].Name + "</a></br>");
           columns += items[i].Name + ",";
         }
-        $('#fields').append("<a type='button' class='btn btn-xs btn-link fieldLink' columns='" + columns.substring(0, columns.length - 1) + "' alias='" + temp.attr("alias") + "' name='star' customerKey='star' style='text-decoration:none;' id='de_star'>*</a></br>");
+        $('#fields').prepend("<a type='button' class='btn btn-xs btn-link fieldLink' columns='" + columns.substring(0, columns.length - 1) + "' alias='" + temp.attr("alias") + "' name='star' customerKey='star' style='text-decoration:none;' id='de_star'>*</a></br>");
       }
     });
   });
@@ -226,7 +218,7 @@ function doubleClickEvents() {
 
     if ("star" === name) {
       var columns = $(this).attr("columns").split(",");
-      for (var i = 0; i <= columns.length; i++)
+      for (var i = 0; i < columns.length; i++)
         if (i < columns.length - 1)
           $("#queryText").insertAtCaret(alias + "." + columns[i].trim() + ", ", "back");
         else
@@ -325,11 +317,12 @@ jQuery.fn.extend({
         <a data-toggle="collapse" data-target="#collapseOne" 
            href="#collapseOne">
           Data Extensions
+          <span id="loading"><img style="height:16px;" src="/img/ajax-loader.gif"/></span>
         </a>
       </h4>
 
           </div>
-          <div id="collapseOne" class="panel-collapse collapse ">
+          <div id="collapseOne" class="panel-collapse collapse in">
             <div class="panel-body" id="tree" style="height:400px; overflow-y:auto;"></div>
           </div>
         </div>
@@ -388,16 +381,7 @@ jQuery.fn.extend({
               <input type="text" class="form-control" id="nameCustKey" name="nameCustKey" placeholder="Query Name">
               <br>
               <input type="text" class="form-control" id="description" name="description" placeholder="Query Description">
-              <br>
-              <table>
-                <tr>
-                  <td style="color:#666; vertical-align:top;">Folder</td>
-                  <td>
-                    
-                  </td>
-                </tr>
-              </table>
-              <br>
+              
               <br>
               <textarea id="queryText" name="queryText" cols="118" rows="15">select &#13;from </textarea>
               <br>
