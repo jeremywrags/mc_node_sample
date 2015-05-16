@@ -26,7 +26,6 @@ ETHelper.prototype.init = function(request) {
 	};
 	SoapClient = new FuelSoap(options);
 }
-
 ETHelper.prototype.folder_findByParent = function(parentID, callback) { 
 
 	var parms = {
@@ -48,7 +47,6 @@ ETHelper.prototype.folder_findByParent = function(parentID, callback) {
 		}
 	});
 };
-
 ETHelper.prototype.folder_retrieve = function(type, callback){
 
 	console.log("Inside retrieve  for Type= " + type);
@@ -60,6 +58,9 @@ ETHelper.prototype.folder_retrieve = function(type, callback){
 			leftOperand: 'ContentType',
 			operator: 'equals',
 			rightOperand: type
+		}, 
+		options: {
+			testOption: "test"
 		}
 	};
 	
@@ -70,30 +71,6 @@ ETHelper.prototype.folder_retrieve = function(type, callback){
 		else{
 			callback(null, response);
 		}
-	});
-};
-
-ETHelper.prototype.folder_retrieveAll = function(type, callback) {
-	
- 	console.log("Inside retrieve all for Type= " + type);
-
-	var parms = {
-		objectType: "DataFolder",
-		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
-		filter:{
-			leftOperand: 'ContentType',
-			operator: 'equals',
-			rightOperand: type
-		},
-		options: {}
-	};
-	
-	this.listAll(parms, SoapClient, function(err, response) {
-			if (err) {
-				console.log("ERROR: " + err.code + " (" + err.message + ")");
-				return;
-			}
-			callback(null, response);
 	});
 };
 ETHelper.prototype.folder_findByNameType = function(type, name, callback) {
@@ -220,7 +197,6 @@ ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback
 		}
 	});
 };
-
 ETHelper.prototype.de_create = function(fields, callback) {
 
 	var parms = {
@@ -331,7 +307,6 @@ ETHelper.prototype.de_retrieveAll = function(callback) {
 			callback(null, response);
 	});
 };
-
 ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
 	var parms = {
 		objectType: objType,
@@ -352,7 +327,6 @@ ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
 		callback(null, response);
 	});
 };
-
 ETHelper.prototype.query_status = function(taskID, callback) {
 	
 	var parms = {
@@ -431,7 +405,6 @@ ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 		callback(null, response[0].Result);
 	});
 };
-
 ETHelper.prototype.listAll = function(parms, SoapClient, callback) {
 
 	SoapClient.retrieve(
@@ -465,7 +438,6 @@ ETHelper.prototype.listAllByCategoryID = function(parms, SoapClient, callback) {
 		}
 	);
 };
-
 ETHelper.prototype.getByName = function(parms, SoapClient, callback) {
 	SoapClient.retrieve(
 		parms.objectType,
