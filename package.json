@@ -29,7 +29,7 @@
     "express": "~3.15.0",
     "express-handlebars": "~1.1.0",
     "express-less-middleware": "~1.3.1",
-    "fuel-soap": "https://github.com/jeremywrags/Fuel-Node-SOAP.git",
+    "fuel-soap": "git=https://github.com/jeremywrags/Fuel-Node-SOAP.git",
     "hbs": "~2.4.0",
     "less": "*",
     "lusca": "~1.0.1",
