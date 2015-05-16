@@ -122,7 +122,7 @@ SQLHelper.prototype.GetObjects  = function(req, parentID, callback) {
 
 SQLHelper.prototype.GetFolders  = function(req, parentID, callback) { 
 	etHelper.init(req); 
-	console.log("About to call folder_retrieveall data extension folders")
+	console.log("About to call folder_retrieveall data extension folders");
     etHelper.folder_retrieve("dataextension", function(err, response) {
         if (err) {
 			callback(err, null);

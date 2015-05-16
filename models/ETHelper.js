@@ -31,10 +31,12 @@ ETHelper.prototype.folder_findByParent = function(parentID, callback) {
 	var parms = {
 		objectType: "DataFolder",
 		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
-		filter:{
-			leftOperand: 'ParentFolder.ID',
-			operator: 'equals',
-			rightOperand: parentID
+		options: {
+			filter:{
+				leftOperand: 'ParentFolder.ID',
+				operator: 'equals',
+				rightOperand: parentID
+			}
 		}
 	};
 	
@@ -54,13 +56,12 @@ ETHelper.prototype.folder_retrieve = function(type, callback){
 	var parms = {
 		objectType: "DataFolder",
 		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
-		filter:{
-			leftOperand: 'ContentType',
-			operator: 'equals',
-			rightOperand: type
-		}, 
 		options: {
-			testOption: "test"
+			filter:{
+				leftOperand: 'ContentType',
+				operator: 'equals',
+				rightOperand: type
+			}
 		}
 	};
 	
@@ -79,17 +80,19 @@ ETHelper.prototype.folder_findByNameType = function(type, name, callback) {
 	var parms = {
 		objectType: "DataFolder",
 		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
-		filter: {
-			leftOperand: {
-				leftOperand: 'Name',
-				operator: 'equals',
-				rightOperand: name
-			},
-			operator: 'AND',
-			rightOperand: {
-				leftOperand: 'ContentType',
-				operator: 'equals',
-				rightOperand: type
+		options: {
+			filter: {
+				leftOperand: {
+					leftOperand: 'Name',
+					operator: 'equals',
+					rightOperand: name
+				},
+				operator: 'AND',
+				rightOperand: {
+					leftOperand: 'ContentType',
+					operator: 'equals',
+					rightOperand: type
+				}
 			}
 		}
 	};
@@ -110,17 +113,19 @@ ETHelper.prototype.folder_findParentByType = function(type, callback) {
 	var parms = {
 		objectType: "DataFolder",
 		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
-		filter: {
-			leftOperand: {
-				leftOperand: 'ContentType',
-				operator: 'equals',
-				rightOperand: type
-			},
-			operator: 'AND',
-			rightOperand: {
-				leftOperand: 'ParentFolder.ID',
-				operator: 'equals',
-				rightOperand: "0"
+		options: {
+			filter: {
+				leftOperand: {
+					leftOperand: 'ContentType',
+					operator: 'equals',
+					rightOperand: type
+				},
+				operator: 'AND',
+				rightOperand: {
+					leftOperand: 'ParentFolder.ID',
+					operator: 'equals',
+					rightOperand: "0"
+				}
 			}
 		}
 	};
@@ -141,17 +146,19 @@ ETHelper.prototype.folder_findByNameParent = function(name, parentID, callback) 
 	var parms = {
 		objectType: "DataFolder",
 		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
-		filter: {
-			leftOperand: {
-				leftOperand: 'Name',
-				operator: 'equals',
-				rightOperand: name
-			},
-			operator: 'AND',
-			rightOperand: {
-				leftOperand: 'ParentFolder.ID',
-				operator: 'equals',
-				rightOperand: parentID
+		options: {
+			filter: {
+				leftOperand: {
+					leftOperand: 'Name',
+					operator: 'equals',
+					rightOperand: name
+				},
+				operator: 'AND',
+				rightOperand: {
+					leftOperand: 'ParentFolder.ID',
+					operator: 'equals',
+					rightOperand: parentID
+				}
 			}
 		}
 	};
@@ -254,10 +261,12 @@ ETHelper.prototype.de_findByParent = function(parentID, callback) {
 	var parms = {
 		objectType: "dataextension",
 		props: ["Name", "CustomerKey"],
-		filter:{
-			leftOperand: 'CategoryID',
-			operator: 'equals',
-			rightOperand: parentID
+		options: {
+			filter:{
+				leftOperand: 'CategoryID',
+				operator: 'equals',
+				rightOperand: parentID
+			}
 		}
 	};
 	
@@ -332,12 +341,13 @@ ETHelper.prototype.query_status = function(taskID, callback) {
 	var parms = {
 		objectType: "AsyncActivityStatus",
 		props: ["Status", "StartTime", "EndTime", "StatusMessage"],
-		filter: {
-			leftOperand: 'TaskID',
-			operator: 'equals',
-			rightOperand:  taskID
-		},
-		options: {}
+		options: {
+			filter: {
+				leftOperand: 'TaskID',
+				operator: 'equals',
+				rightOperand:  taskID
+			}
+		}
 	};
 	
 	this.retrieve(parms, SoapClient, function(err, response) {
@@ -410,7 +420,7 @@ ETHelper.prototype.listAll = function(parms, SoapClient, callback) {
 	SoapClient.retrieve(
 		parms.objectType,
 		parms.props,
-		parms.filter,
+		parms.options,
 		function(err, response) {
 			if (err) {
 				// error here
@@ -427,7 +437,7 @@ ETHelper.prototype.listAllByCategoryID = function(parms, SoapClient, callback) {
 	SoapClient.retrieve(
 		parms.objectType,
 		parms.props,
-		parms.filter,
+		parms.options,
 		function(err, response) {
 			if (err) {
 				// error here
@@ -442,7 +452,7 @@ ETHelper.prototype.getByName = function(parms, SoapClient, callback) {
 	SoapClient.retrieve(
 		parms.objectType,
 		parms.props,
-		parms.filter,
+		parms.options,
 		function(err, response) {
 			if (err) {
 				// error here
@@ -458,7 +468,7 @@ ETHelper.prototype.getByCustomerKey = function(parms, SoapClient, callback) {
 	SoapClient.retrieve(
 		parms.objectType,
 		parms.props,
-		parms.filter,
+		parms.options,
 		function(err, response) {
 			if (err) {
 				// error here
@@ -475,7 +485,7 @@ ETHelper.prototype.getByCustomerKey = function(parms, SoapClient, callback) {
 
 ETHelper.prototype.retrieve = function(parms, callback) {
 
-	SoapClient.retrieve(parms.objectType,parms.props,parms.filter,function(err, response) {
+	SoapClient.retrieve(parms.objectType,parms.props,parms.options,function(err, response) {
 			if (err) {
 				callback(err, null);
 			}
