@@ -32,6 +32,17 @@ module.exports = {
 			fuelapiRestHost: 'www.exacttargetapis.com',
 			baseUrl: 'mc.exacttarget.com/rest/',
 			soapEndpoint: 'https://webservice.exacttarget.com/Service.asmx', 
+		},
+		S4: {
+			appId: '08726dfa-e51f-421f-a46a-b19ad2d0069d',
+			clientId: 'ft2gp2mpbbcq3je2756bdy7h',
+			clientSecret: 'yBZCbqmGXxnuFQthaJMvawYa',
+			appSignature: 'bttqjr4awqkc1oszlpmnpqoqz4vcfvlnmaw24ksdpsk0uytajuoeumyx4jvxhmsmlbm5tgor4aliecxqqg0voldntlb1zb33dg31rnl0hqja1xle2qr1rsrt0osokqmdbzmws0z24fqqd2q5hlbcx0kar1riys41tlaczj03ev001qzujrrf0z4gtzencgvuimp1oe1lcjycdx3dajqospesiklrkbus1q0ds1z5bm2nqie4dkbu5q4mcyphyyn',
+			authUrl: 'https://auth.exacttargetapis.com/v1/requestToken?legacy=1',
+			legacyRestHost: 'rest.exacttarget.com',
+			fuelapiRestHost: 'www.exacttargetapis.com',
+			baseUrl: 'mc.exacttarget.com/rest/',
+			soapEndpoint: 'https://webservice.exacttarget.com/Service.asmx', 
 		}
 	},
 	appOptions: {

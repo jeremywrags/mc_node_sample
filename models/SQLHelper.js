@@ -113,10 +113,10 @@ SQLHelper.prototype.GetObjects  = function(req, parentID, callback) {
     });
     
 };
-SQLHelper.prototype.GetFolders  = function(req, parentID, callback) { 
+SQLHelper.prototype.GetFolders  = function(req, parentID, objType, callback) { 
 
 	etHelper.init(req); 
-    etHelper.folder_retrieve("dataextension", function(err, response) {
+    etHelper.folder_retrieve(objType, function(err, response) {
         if (err) {
 			callback(err, null);
 		}
@@ -169,71 +169,74 @@ SQLHelper.prototype.nameCheck = function(req, callback) {
 		}
 	});
 };
-SQLHelper.prototype.createQuery = function(req, callback) {
+
+SQLHelper.prototype.createDE = function(req, callback) {
 
 	etHelper.init(req); 
 	var fields = parseSQL(req.body.queryText);
-	var out = new Object();
-	out.StatusMessage = "";
-	
 	etHelper.de_create(fields, function(err, response) {
 		if(err){
-			out.StatusCode = err.results[0].StatusCode;
-			out.StatusMessage = err.results[0].StatusMessage;
-			callback(null, out);
+			callback(err, null);
 		}
 		else{
-			if(response.StatusCode == "OK")
-			{
-				out.StatusCode = "OK";
-				out.StatusMessage += response.StatusMessage + "<br/>";
-				
-				etHelper.query_create(function(err, response) {	
-					if(err){
-						out.StatusCode = err.results[0].StatusCode;
-						out.StatusMessage = err.results[0].StatusMessage;
-						
-						etHelper.de_delete(function(err, response){
-							out.StatusMessage += "Cleanup Response: " + response.StatusMessage + "<br/>";
-							callback(null, out);
-						});
-					}
-					else{
-						if(response.StatusCode == "OK")
-						{
-							out.StatusCode = "OK";
-							out.StatusMessage += response.StatusMessage + "<br/>";
-							
-							etHelper.query_execute(response.NewObjectID, function(err, response){
-								if(err){
-									out.StatusCode = err.results[0].StatusCode;
-									out.StatusMessage += err.results[0].StatusMessage;
-									callback(null, out);
-								}
-								else{
-									out.StatusCode = "OK";
-									out.StatusMessage += response.StatusMessage + "<br/>";
-									out.QueryResponse = response;
-									callback(null, out);
-								}
-							});
-						}
-						else{
-							out.StatusCode = "Warning";
-							out.StatusMessage += response.StatusMessage + "<br/>";
-							callback(null, out);
-						}
-					}
-				});
-			}
-			else{
-				out.StatusCode = "Warning";
-				out.StatusMessage += response.StatusMessage + "<br/>";
-				callback(null, out);
-			}
+			callback(null, response, fields);
 		}
 	});
 };
+
+SQLHelper.prototype.createQuery = function(req, callback) {
+
+	etHelper.init(req); 
+	etHelper.query_create(function(err, response) {	
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+
+SQLHelper.prototype.executeQuery = function(req, callback) {
+
+	etHelper.init(req); 
+	etHelper.query_execute(req.body.queryObjectID, function(err, response) {	
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+
+SQLHelper.prototype.queryStatus = function(req, callback) {
+
+	etHelper.init(req); 
+	etHelper.query_status(req.body.queryTaskID, function(err, response) {	
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+
+SQLHelper.prototype.retrieveRows = function(req, callback) {
+
+	etHelper.init(req); 
+	etHelper.de_retrieveRows(req.body.nameCustKey, req.body.props, function(err, response) {	
+		if(err){
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+
+
 function parseSQL(query) {
 
 	query = query.replace("distinct", "").toLowerCase();

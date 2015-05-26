@@ -9,8 +9,6 @@ var testController = require('./test-can-remove'); // you should remove this. ju
 var SQLHelper = require(__dirname + '/../models/SQLHelper.js');
 var sqlHelper = new SQLHelper();
 
-
-
 var defaultOptions = {
 	title: 'SampleNodeApp | by ExactTarget',
 	ui: JSON.stringify(config.ui)
@@ -134,22 +132,48 @@ module.exports = function(server) {
 		sqlHelper.de_retrieveAll(req, function(err, results) {
 			res.send(results);
 		});
-		
-		//sqlHelper.GetFoldersAndObjects(req, req.session.ParentDEFolderID, function(err, response){
-		//			res.send(response);
-		//});
 	});
 	
-	server.post('/GetFolders', function(req, res) {
-		console.log("Calling Get Folders: ParentID - " + req.session.ParentDEFolderID);
-		sqlHelper.GetFolders(req, req.session.ParentDEFolderID, function(err, response){
-			res.send(response);
+	server.post('/FolderTree', function(req, res) {
+		
+		var treeRef = req.body.treeRef;
+		var treeType = req.body.treeType;
+		
+
+		sqlHelper.GetFolders(req, req.session.ParentDEFolderID, "dataextension", function(err, response){
+			var items = response;
+	        var arr = [];
+	        var obj = new Object();
+	          
+        	obj.id = req.session.ParentDEFolderID;
+	        obj.parent = "#";
+	        obj.text = "Data Extensions";
+	        arr.push(obj);
+	
+	        for (var i = 0; i < items.length; i++) {
+	        	if (items[i].ParentFolder.ID != 0) {
+	            	var obj = new Object();
+	              	obj.id = items[i].ID;
+	              	if(items[i].Name === req.session.fuel.mid + "_" +config.appOptions.folderName)
+	              		obj.a_attr = {nodeType: "appFolder", treeRef: treeRef};
+	              	else
+		              	obj.a_attr = {nodeType: "folder"};
+	              	obj.parent = items[i].ParentFolder.ID;
+	              	obj.text = items[i].Name;
+	              	arr.push(obj);
+	            }
+	       	}
+			
+			res.send(arr);
 		});
 	});
 	
 	server.post('/CreateFolder', function(req, res) {
 		sqlHelper.CreateFolder(req, function(err, response){
-			res.send(response);
+			if(err)
+				res.send(err.results[0]);
+			else
+				res.send(response[0]);
 		});
 	});
 	
@@ -165,12 +189,6 @@ module.exports = function(server) {
 		});
 	});
 	
-	server.post('/queryStatus', function(req, res) {
-		sqlHelper.queryStatus(req, function(err, results) {
-			res.send(results);
-		});
-	});
-	
 	server.post('/nameCheck', function(req, res) {
 		
 		sqlHelper.nameCheck(req, function(err, results) {
@@ -178,7 +196,65 @@ module.exports = function(server) {
 		});
 	});
 
-	server.post('/CreateQuery', function(req, res) {
+	server.post('/createDE', function(req, res) {
+		sqlHelper.createDE(req, function(err, results, fields) {
+			if(err)
+				res.send({ results : err.results[0] });
+			else
+				res.send({ results: results, fields: fields});
+		});
+	});
+	
+	server.post('/createQuery', function(req, res) {
+		sqlHelper.createQuery(req, function(err, results) {
+			if(err)
+				res.send(err.results[0]);
+			else
+				res.send(results);
+		});
+	});
+	
+	server.post('/executeQuery', function(req, res) {
+		sqlHelper.executeQuery(req, function(err, results) {
+			if(err)
+				res.send(err.results[0]);
+			else
+				res.send(results);
+		});
+	});
+	
+	server.post('/queryStatus', function(req, res) {
+		sqlHelper.queryStatus(req, function(err, results) {
+			if(err)
+				res.send(err.results[0]);
+			else
+				res.send(results);
+		});
+	});
+	
+	server.post('/retrieveRows', function(req, res) {
+		sqlHelper.retrieveRows(req, function(err, results) {
+			if(err)
+				res.send(err.results[0]);
+			else
+			{
+				var arr = [];
+				for(var i = 0; i < results.length; i++)
+				{
+					var arr2 = [];
+					for(var j = 0; j < results[i].Properties.Property.length; j++)
+					{
+						arr2.push(results[i].Properties.Property[j].Value); 
+					}
+					arr.push(arr2);
+				}
+				res.send({ data : arr });
+			}
+		});
+	});
+	
+
+	server.post('/CreateQuery2', function(req, res) {
 
 		var mid = null;
 		var eid = null;
@@ -226,31 +302,6 @@ module.exports = function(server) {
 		//We need to create the folders
 		res.render( 'index', {} );
 	});
-
-	/*
-	ETParms = 
-					{
-						objectType: "QueryDefinition",
-						props:
-						{
-							Name: req.body.NameCustKey, 
-							CustomerKey:req.body.NameCustKey, 
-							Description: req.body.Description,
-							QueryText: req.body.QueryText,  
-							CategoryID: folders[0].ID,
-							DataExtensionTarget: {CustomerKey: "de_sql", Name: "de_sql"},
-							TargetUpdateType: "Overwrite",
-							Client: {ID: mid }
-						},
-						options: {}
-					}
-					
-					//Wire this to the new Helper
-					etHelper.create(ETParms, function(err, query){
-						res.render('index', {});							
-		
-*/
-
 
 	server.get('/harness', function(req, res) {
 		res.render('harness', {});

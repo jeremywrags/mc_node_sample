@@ -193,7 +193,7 @@ ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback
 		options: {}
 	};
 
-	this.create(newFolderParms, function(err, response) {
+	this.create(newFolderParms, SoapClient, function(err, response) {
 		if (err) {
 			callback(err, null);
 		}
@@ -218,12 +218,12 @@ ETHelper.prototype.de_create = function(fields, callback) {
 			Client: {
 				ID: req.session.fuel.mid
 			},
-			CategoryID: req.body.categoryID
+			CategoryID: req.session.DEFolderID
 		},
 		options: {}
 	};
 
-	this.create(parms, function(err, response) {
+	this.create(parms, SoapClient, function(err, response) {
 		if (err) {
 			callback(err, null);
 		}
@@ -245,7 +245,7 @@ ETHelper.prototype.de_delete = function(callback) {
 		options: {}
 	};
 
-	this.delete(parms, function(err, response) {
+	this.delete(parms, SoapClient, function(err, response) {
 		if (err) {
 			callback(err, null);
 		}
@@ -317,23 +317,6 @@ ETHelper.prototype.de_retrieveAll = function(callback) {
 		}
 	});
 };
-ETHelper.prototype.de_retrieveRows = function(nameCustKey, props, callback) {
-	
-	var parms = {
-		objectType: "DataExtensionObject[" + nameCustKey + "]",
-		props: props,
-		options: {}
-	};
-	
-	this.retrieve(parms, function(err, response) {
-		if (err) {
-			callback(err, null);
-		}
-		else{
-			callback(null, response);
-		}
-	});
-};
 ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
 	var parms = {
 		objectType: objType,
@@ -402,7 +385,7 @@ ETHelper.prototype.query_create = function(callback) {
 		options: {}
 	};
 
-	this.create(parms, function(err, response) {
+	this.create(parms, SoapClient, function(err, response) {
 		
 		if (err) {
 			callback(err, null);
@@ -427,7 +410,7 @@ ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 		options: {}
 	};
 
-	this.perform(parms, function(err, response){
+	this.perform(parms, SoapClient, function(err, response){
 		if (err) {
 			callback(err, null);
 		}

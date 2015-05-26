@@ -1,35 +1,12 @@
 <div class="container">
-
-  
-  <div class="row">
-    <div class="col-md-3">
-      <h3>Results Pane</h3>
-    </div>
-    <div class="col-md-9">
-
-
-    
-        <div id="home" class="tab-pane fade in active">
-          <br/>
-          <form action="/CreateQuery" method="POST">
-            <div class="form-group">
-              <input type="text" class="form-control" id="nameCustKey" name="nameCustKey" placeholder="Query Name">
-              <br>
-              <input type="text" class="form-control" id="description" name="description" placeholder="Query Description">
-              <br>
-              <textarea id="queryText" name="queryText" cols="118" rows="15"></textarea>
-              <br>
-            </div>
-            <button type="submit" class="btn btn-default">Submit</button>
-          </form>
-
-        </div>
-        <div id="menu1" class="tab-pane fade">
-
-          <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        </div>
-
-    </div>
-
-  </div>
+<table id="table-pagination" data-url="data2.json" data-height="400" data-pagination="true" data-search="true">
+    <thead>
+        <tr>
+            <th data-field="state" data-checkbox="true"></th>
+            <th data-field="id" data-align="right" data-sortable="true">Item ID</th>
+            <th data-field="name" data-align="center" data-sortable="true">Item Name</th>
+            <th data-field="price" data-sortable="true" data-sorter="priceSorter">Item Price</th>
+        </tr>
+    </thead>
+</table>
 </div>
