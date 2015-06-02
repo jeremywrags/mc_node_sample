@@ -36,7 +36,7 @@ $(document).ready(function() {
   });
 
   //Initialize the Application
-  BuildTree("tree", true);
+  BuildTree("tree", true, "dataextension");
 
   //helper function to setup events
   clickEvents();
@@ -87,8 +87,12 @@ function parseResponse(response, message){
   $("#progress").append('Status Message: ' + response.StatusMessage + '</div>');
 }
 function createQuery(){
+  
+  var action = $("#action").val();
+  
   $.ajax({
       url: '/createDE',
+      //url: "/" + action + "DE",
       data: { queryText: $("#queryText").val(), nameCustKey: $("#nameCustKey").val(), description: $("#description").val(), categoryID: $("#categoryID").val()},
       type: 'post',
       //Begin Create DE Success Function
@@ -97,15 +101,16 @@ function createQuery(){
         var response =  responseObj.results;
         fields = responseObj.fields
         
-        parseResponse(response, "Create Data Extension");
+        parseResponse(response, action + " Data Extension");
         console.log(response);
         if(response.StatusCode === "OK"){
           $.ajax({
             url: '/createQuery',
+            //url: "/" + action + "Query",
             data: {queryText: $("#queryText").val(),nameCustKey: $("#nameCustKey").val(),description: $("#description").val(), categoryID: $("#categoryID").val()},
             type: 'post',
             success: function(response) {
-              parseResponse(response, "Create Query Activity");
+              parseResponse(response, action + " Query Activity");
               console.log(response);
               if(response.StatusCode === "OK"){
                 $.ajax({
@@ -125,7 +130,7 @@ function createQuery(){
                           type: 'post',
                           success: function(response) {
                             parseResponseStatus(response);
-                            console.log(response);
+                            //console.log(response);
                             if(response.Properties.Property[0].Value === "Complete")
                             {
                               clearInterval(intervalID);
@@ -147,7 +152,7 @@ function createQuery(){
                                 html += '<th>' + fields[i].Name + '</th>';
                               }
                               html += '</tr></tfoot></table>';
-                              console.log(html);
+                              //console.log(html);
                               
                               $("#dataResults").html(html);
                                
@@ -264,19 +269,20 @@ function BuildTree(treeName, getObjects, treeType ) {
         
         if(alreadyClicked == -1)
         {
-          if(typeof data.node.a_attr.nodeType == 'undefined' && getObjects)
+          if((typeof data.node.a_attr.nodeType == 'undefined' || data.node.a_attr.nodeType != "de") && getObjects)
           {
             clickedNodes.push(data.node.id)
             $.ajax({
               url: '/GetObjects',
               data: {
-                ParentFolderID: data.node.id 
+                ParentFolderID: data.node.id,
+                treeType: data.node.a_attr.nodeType
               },
               type: 'POST',
               success: function(items) {
                 for(var i=0; i < items.length; i++)
                 {
-                    tree.jstree(true).create_node(data.node, { type: "de", text: items[i].Name, a_attr : { nodeType: "de",  alias: "tbl" + ++aliasCounter, customerKey: items[i].Name, name: items[i].Name, class: "deLink"},  icon : "/img/dbIcon.png"}, 'last');
+                    tree.jstree(true).create_node(data.node, { type: "de", text: items[i].Name, a_attr : { nodeType: "de",  alias: "tbl" + ++aliasCounter, customerKey: items[i].Name, name: items[i].Name, class: data.node.a_attr.nodeType + "_Link"},  icon : "/img/dbIcon.png"}, 'last');
                 }
               }
             });
@@ -306,7 +312,7 @@ function customMenu(node)
         }
     }
 
-    if (node.a_attr.nodeType != 'appFolder') {
+    if (typeof node.a_attr.appFolder === 'undefined') {
         delete items.Create;
     } 
     
@@ -328,14 +334,14 @@ function clickEvents() {
     $('#modalTreeContainer').modal({
       backdrop: 'static'
     });
-    BuildTree("modalTree", false);
+    BuildTree("modalTree", false, "dataextension");
   });
   
   $(document.body).on('click', '#selectQuery', function() {
     $('#modalQueryContainer').modal({
       backdrop: 'static'
     });
-    BuildTree("modalQuery", false, "queryactivity");
+    BuildTree("modalQuery", true, "queryactivity");
   });
   
   $(document.body).on('click', '.dvLink', function() {
@@ -348,7 +354,29 @@ function clickEvents() {
     }
   });
 
-  $(document.body).on('click', '.deLink', function() {
+  $(document.body).on('click', '.querydefinition_Link', function() {
+
+      var cKey = $(this).attr("customerKey");   
+      $.ajax({
+      url: '/getQuery',
+      data: {
+        customerKey: cKey
+      },
+      type: 'POST',
+      success: function(response) {
+        console.log(response);
+        $("#nameCustKey").val(response.CustomerKey);
+        $("#description").val(response.Description);
+        $("#queryText").val(response.PartnerProperties.Value);
+        $("#categoryID").val(response.CategoryID);
+        $("#action").val("update");
+        $('#modalQueryContainer').modal("hide");
+        
+      }
+    });
+  });
+
+  $(document.body).on('click', '.dataextension_Link', function() {
 
     $("#collapseThree").collapse('show');
     var temp = $(this);
@@ -545,6 +573,7 @@ jQuery.fn.extend({
         </tr>
       </table>
       <input type="hidden" id="categoryID">
+      <input type="hidden" id="action" value="create">
       <br><br>
       <textarea id="queryText" name="queryText" cols="100" rows="15">select &#13;from </textarea>
       <br>

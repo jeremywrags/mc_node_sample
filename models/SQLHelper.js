@@ -100,10 +100,12 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
 		}
 	});
 };
-SQLHelper.prototype.GetObjects  = function(req, parentID, callback) { 
+SQLHelper.prototype.GetObjects  = function(req, parentID, objType, callback) { 
+	
 	etHelper.init(req); 
 	
-    etHelper.de_findByParent(parentID, function(err, response) {
+	etHelper.obj_findByParent(parentID, objType, function(err, response) {
+    //etHelper.de_findByParent(parentID, function(err, response) {
         if (err) {
 			callback(err, null);
 		}
@@ -113,7 +115,23 @@ SQLHelper.prototype.GetObjects  = function(req, parentID, callback) {
     });
     
 };
-SQLHelper.prototype.GetFolders  = function(req, parentID, objType, callback) { 
+
+SQLHelper.prototype.GetQuery  = function(req, customerKey, callback) { 
+	
+	etHelper.init(req); 
+	
+	etHelper.query_retrieve(customerKey, function(err, response) {
+        if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+    });
+    
+};
+
+SQLHelper.prototype.GetFolders  = function(req, objType, callback) { 
 
 	etHelper.init(req); 
     etHelper.folder_retrieve(objType, function(err, response) {
@@ -183,6 +201,25 @@ SQLHelper.prototype.createDE = function(req, callback) {
 		}
 	});
 };
+
+SQLHelper.prototype.updateDE = function(req, callback) {
+
+	etHelper.init(req); 
+	
+	etHelper.de_delete(req.body.nameCustKey, function(err, response){
+		
+		var fields = parseSQL(req.body.queryText);
+		etHelper.de_create(fields, function(err, response) {
+			if(err){
+				callback(err, null);
+			}
+			else{
+				callback(null, response, fields);
+			}
+		});	
+	});
+};
+
 
 SQLHelper.prototype.createQuery = function(req, callback) {
 

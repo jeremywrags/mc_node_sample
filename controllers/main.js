@@ -98,19 +98,23 @@ module.exports = function(server) {
 
 			//Folder ID's were not found so let's go get them.
 			sqlHelper.init(req, mid + "_" +config.appOptions.folderName, function(err, response) {
-				console.log(response);
-				
-				sqlHelper.GetFoldersAndObjects(req, req.session.ParentDEFolderID, function(err, response){
-					res.render('index', _.extend(defaultOptions, {
-						csrfToken: res.locals._csrf,
-						mid: mid,
-						eid: eid,
-						appId: appId, 
-						uiObjects: JSON.stringify(response)
-					}));
-				});
-				
-				
+				if(err)
+				{
+					console.log(err);
+					//res.send({ results : err.results[0] });
+				}
+				else
+				{
+					sqlHelper.GetFoldersAndObjects(req, req.session.ParentDEFolderID, function(err, response){
+						res.render('index', _.extend(defaultOptions, {
+							csrfToken: res.locals._csrf,
+							mid: mid,
+							eid: eid,
+							appId: appId, 
+							uiObjects: JSON.stringify(response)
+						}));
+					});
+				}
 			});
 		}
 		else{
@@ -139,15 +143,30 @@ module.exports = function(server) {
 		var treeRef = req.body.treeRef;
 		var treeType = req.body.treeType;
 		
+		console.log(treeType);
 
-		sqlHelper.GetFolders(req, req.session.ParentDEFolderID, "dataextension", function(err, response){
+		sqlHelper.GetFolders(req, treeType, function(err, response){
 			var items = response;
 	        var arr = [];
 	        var obj = new Object();
+	        
+	        if(treeType === "queryactivity")
+	          treeType = "querydefinition";
 	          
-        	obj.id = req.session.ParentDEFolderID;
-	        obj.parent = "#";
-	        obj.text = "Data Extensions";
+	        if(treeType === "dataextension")  
+        	{
+        		obj.id = req.session.ParentDEFolderID;
+	        	obj.parent = "#";
+	        	obj.text = "Data Extensions";
+	        	obj.a_attr = { nodeType : treeType };
+        	}
+        	else
+        	{
+        		obj.id = req.session.ParentQueryFolderID;
+	        	obj.parent = "#";
+	        	obj.text = "Queries";
+	        	obj.a_attr = { nodeType : treeType };
+        	}
 	        arr.push(obj);
 	
 	        for (var i = 0; i < items.length; i++) {
@@ -155,9 +174,9 @@ module.exports = function(server) {
 	            	var obj = new Object();
 	              	obj.id = items[i].ID;
 	              	if(items[i].Name === req.session.fuel.mid + "_" +config.appOptions.folderName)
-	              		obj.a_attr = {nodeType: "appFolder", treeRef: treeRef};
+	              		obj.a_attr = {nodeType: treeType, appFolder: "true", treeRef: treeRef};
 	              	else
-		              	obj.a_attr = {nodeType: "folder"};
+		              	obj.a_attr = {nodeType: treeType};
 	              	obj.parent = items[i].ParentFolder.ID;
 	              	obj.text = items[i].Name;
 	              	arr.push(obj);
@@ -178,7 +197,15 @@ module.exports = function(server) {
 	});
 	
 	server.post('/GetObjects', function(req, res) {
-		sqlHelper.GetObjects(req, req.body.ParentFolderID, function(err, response){
+		
+		sqlHelper.GetObjects(req, req.body.ParentFolderID, req.body.treeType, function(err, response){
+			res.send(response);
+		});
+	});
+	
+	server.post('/getQuery', function(req, res) {
+		
+		sqlHelper.GetQuery(req, req.body.customerKey, function(err, response){
 			res.send(response);
 		});
 	});
@@ -190,7 +217,6 @@ module.exports = function(server) {
 	});
 	
 	server.post('/nameCheck', function(req, res) {
-		
 		sqlHelper.nameCheck(req, function(err, results) {
 			res.send(results);
 		});
@@ -204,6 +230,15 @@ module.exports = function(server) {
 				res.send({ results: results, fields: fields});
 		});
 	});
+	
+/*	server.post('/updateDE', function(req, res) {
+		sqlHelper.updateDE(req, function(err, results, fields) {
+			if(err)
+				res.send({ results : err.results[0] });
+			else
+				res.send({ results: results, fields: fields});
+		});
+	});*/
 	
 	server.post('/createQuery', function(req, res) {
 		sqlHelper.createQuery(req, function(err, results) {

@@ -232,6 +232,35 @@ ETHelper.prototype.de_create = function(fields, callback) {
 		}
 	});
 };
+ETHelper.prototype.de_update = function(fields, callback) {
+
+	var parms = {
+		objectType: "DataExtension",
+		props: {
+			Name: req.body.nameCustKey,
+			CustomerKey: req.body.nameCustKey,
+			Description: req.body.description,
+			IsSendable: false,
+			IsTestable: false,
+			Fields: {
+				Field: fields
+			},
+			Client: {
+				ID: req.session.fuel.mid
+			}
+		},
+		options: {}
+	};
+
+	this.update(parms, function(err, response) {
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response[0]);
+		}
+	});
+};
 ETHelper.prototype.de_delete = function(callback) {
 
 	var parms = {
@@ -250,7 +279,7 @@ ETHelper.prototype.de_delete = function(callback) {
 			callback(err, null);
 		}
 		else{
-			callback(null, response[0]);
+			callback(null, response);
 		}
 	});
 };
@@ -326,6 +355,55 @@ ETHelper.prototype.de_retrieveRows = function(nameCustKey, props, callback) {
 	};
 	
 	this.retrieve(parms, function(err, response) {
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+ETHelper.prototype.obj_findByParent = function(parentID, objType, callback) { 
+
+	var parms = new Object();
+	if(objType === "dataextension")
+	{
+		parms = {
+			objectType: objType,
+			props: ["Name", "CustomerKey"],
+			options: {
+				filter:{
+					leftOperand: 'CategoryID',
+					operator: 'equals',
+					rightOperand: parentID
+				}
+			}
+		};
+	}
+	else
+	{
+		parms = {
+			objectType: objType,
+			props: ["Name", "CustomerKey"],
+			options: {
+				filter: {
+				leftOperand: {
+					leftOperand: 'CategoryID',
+					operator: 'equals',
+					rightOperand: parentID
+				},
+				operator: 'AND',
+				rightOperand: {
+					leftOperand: 'Status',
+					operator: 'equals',
+					rightOperand: "Active"
+				}
+			}
+			}
+		};
+	}
+	
+	this.retrieve(parms, function(err, response){
 		if (err) {
 			callback(err, null);
 		}
@@ -412,6 +490,29 @@ ETHelper.prototype.query_create = function(callback) {
 		}
 	});
 };
+ETHelper.prototype.query_retrieve = function(customerKey, callback) {
+	
+	var parms = {
+		objectType: "querydefinition",
+		props: ["Name", "CustomerKey", "CategoryID", "Description", "queryText"],
+		options: {
+			filter:{
+					leftOperand: 'customerKey',
+					operator: 'equals',
+					rightOperand: customerKey
+				}
+		}
+	};
+	
+	this.retrieve(parms, function(err, response) {
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response[0]);
+		}
+	});
+};
 ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 
 	var parms = {
@@ -433,6 +534,28 @@ ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 		}
 		else{
 			callback(null, response[0].Result);
+		}
+	});
+};
+ETHelper.prototype.query_delete = function(callback) {
+
+	var parms = {
+		objectType: "querydefinition",
+		props: {
+			CustomerKey: req.body.nameCustKey,
+			Client: {
+				ID: req.session.fuel.mid
+			}
+		},
+		options: {}
+	};
+
+	this.delete(parms, function(err, response) {
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response[0]);
 		}
 	});
 };
@@ -494,6 +617,17 @@ ETHelper.prototype.create = function(parms, callback) {
 		}
 	);
 };
+ETHelper.prototype.update = function(parms, callback) {
+	SoapClient.update(parms.objectType,	parms.props, parms.options, function(err, response) {
+			if (err) {
+				callback(err, null);
+			}
+			else{
+				callback(null, response.body.Results);
+			}
+		}
+	);
+};
 ETHelper.prototype.delete = function(parms, callback) {
 	SoapClient.delete(parms.objectType,	parms.props, parms.options, function(err, response) {
 			if (err) {
@@ -520,6 +654,7 @@ ETHelper.prototype.perform = function(parms, callback) {
 		}
 	);
 };
+
 
 //******************** End Iterface to standard ET SOAP Methods ****************************//
 
