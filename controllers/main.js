@@ -106,6 +106,10 @@ module.exports = function(server) {
 				else
 				{
 					sqlHelper.GetFoldersAndObjects(req, req.session.ParentDEFolderID, function(err, response){
+						
+						var fCount = response[0].length;
+						var deCount = response[1].length;
+						
 						res.render('index', _.extend(defaultOptions, {
 							csrfToken: res.locals._csrf,
 							mid: mid,
@@ -183,7 +187,8 @@ module.exports = function(server) {
 	            }
 	       	}
 			
-			res.send(arr);
+			var arr2 = sortByKey(arr, "text");
+			res.send(arr2);
 		});
 	});
 	
@@ -199,9 +204,17 @@ module.exports = function(server) {
 	server.post('/GetObjects', function(req, res) {
 		
 		sqlHelper.GetObjects(req, req.body.ParentFolderID, req.body.treeType, function(err, response){
-			res.send(response);
+			var arr = sortByKey(sortByKey(response, "Name"));
+			res.send(arr);
 		});
 	});
+	
+	function sortByKey(array, key) {
+	    return array.sort(function(a, b) {
+	        var x = a[key]; var y = b[key];
+	        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+	    });
+	}
 	
 	server.post('/getQuery', function(req, res) {
 		

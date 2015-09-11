@@ -336,16 +336,52 @@ ETHelper.prototype.de_retrieveAll = function(callback) {
 		filter: "",
 		options: {}
 	};
+	var t = this;
 	
-	this.retrieve(parms, function(err, response) {
+	t.retrieve2(parms, function(err, response) {
 		if (err) {
 			callback(err, null);
 		}
 		else{
-			callback(null, response[0]);
+			if(response.OverallStatus == "MoreDataAvailable"){
+				response.Results.push(t.ContinueRequest(response.RequestID));
+				callback(null, response.Results);	
+			}
+			else{
+				callback(null, response.Results);	
+			}
 		}
 	});
 };
+
+ETHelper.prototype.ContinueRequest = function(requestID){
+
+	var parms = {
+		objectType: "dataextension",
+		props: ["Name", "CustomerKey", "CategoryID"],
+		filter: "",
+		options: {
+			continueRequest: requestID
+		}
+	};
+				
+	var t = this;				
+				
+	t.retrieve2(parms, function(err, response) {
+		if (err) {
+			//callback(err, null);
+		}
+		else{
+			if(response.OverallStatus == "MoreDataAvailable"){
+				response.Results.push(t.ContinueRequest(response.RequestID));
+			}
+			else{
+				return response.results;
+			}
+		}
+	});
+};
+
 ETHelper.prototype.de_retrieveRows = function(nameCustKey, props, callback) {
 	
 	var parms = {
@@ -602,6 +638,24 @@ ETHelper.prototype.retrieve = function(parms, callback) {
 			}
 			else{
 				callback(null, response.body.Results);
+			}
+		}
+	);
+};
+
+
+ETHelper.prototype.retrieve2 = function(parms, callback) {
+
+	SoapClient.retrieve(parms.objectType,parms.props,parms.options,function(err, response) {
+			if (err) {
+				callback(err, null);
+			}
+			else{
+				var out = new Object();
+				out.Results = response.body.Results;
+				out.OverallStatus = response.body.OverallStatus;
+				out.RequestID = response.body.RequestID;
+				callback(null, out);
 			}
 		}
 	);

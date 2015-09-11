@@ -71,7 +71,8 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
 	
 	async.parallel([
     function GetFolders(callback) { 
-        etHelper.folder_findByParent(parentID, function(err, response, parentID) {
+        //etHelper.folder_findByParent(parentID, function(err, response, parentID) {
+        etHelper.folder_retrieve("dataextension", function(err, response) {
             if (err) {
 				callback(err, null);
 			}
@@ -81,7 +82,8 @@ SQLHelper.prototype.GetFoldersAndObjects  = function(req, parentID, callback) {
         });
     },
     function GetObjects(callback) { 
-        etHelper.de_findByParent(parentID, function(err, response, parentID) {
+        //etHelper.de_findByParent(parentID, function(err, response, parentID) {
+        etHelper.de_retrieveAll(function(err, response) {
             if (err) {
 				callback(err, null);
 			}

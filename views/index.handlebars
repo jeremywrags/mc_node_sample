@@ -216,6 +216,11 @@ function BuildTree(treeName, getObjects, treeType ) {
           'data': folders
         },
         "plugins": ["contextmenu", "dnd", "search", "types", "wholerow"],
+        /*'sort' :  function (a, b) {
+          //var a1 = this.get_node(a).original;
+          //var b1 = this.get_node(b).original;
+          return this.get_node(a).original.a_attr.nodeType > this.get_node(b).original.a_attr.nodeType ? 1 : -1;
+        },*/
         "contextmenu": {
           items : customMenu
           /*"items": function($node) {
@@ -418,7 +423,7 @@ function doubleClickEvents() {
     }
   });
 
-  $(document).on('dblclick', '.deLink', function() {
+  $(document).on('dblclick', '.dataextension_Link', function() {
     var name = $(this).attr("name");
     var alias = $(this).attr("alias");
     $("#queryText").insertAtCaret(name + " as " + alias, "front");
