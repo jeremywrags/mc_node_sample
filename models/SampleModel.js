@@ -21,7 +21,7 @@ SampleModel.prototype.Sample  = function(req, callback) {
 	
 	async.parallel([
     function GetFolders(callback) { 
-        etHelper.folder_retrieve("dataextension", function(err, response) {
+        etHelper.Folder_RetrieveByType("dataextension", function(err, response) {
             if (err) {
 				callback(err, null);
 			}
@@ -31,7 +31,7 @@ SampleModel.prototype.Sample  = function(req, callback) {
         });
     },
     function GetObjects(callback) { 
-        etHelper.de_retrieveAll(function(err, response) {
+        etHelper.DataExtension_RetrieveAll(function(err, response) {
             if (err) {
 				callback(err, null);
 			}

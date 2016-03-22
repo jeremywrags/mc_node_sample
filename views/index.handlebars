@@ -1,5 +1,71 @@
-{{mid}}</br>
-{{eid}}</br>
-{{appID}}</br>
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/Dynatable/0.3.1/jquery.dynatable.css">
 
-<a href="/test">Click Me</a>
+<script>
+$(document).ready(function(){
+    $("#Folder_RetrieveByID").on("click", function(){
+        $.post("Demo_Folder_RetrieveByID",
+        {
+            ID: $("#FolderID").val()
+        },
+        function(data, status){
+            $("#results").html(JSON.stringify(data));
+        });
+    });
+    
+    $("#Folder_RetrieveByType").on("click", function(){
+        $.post("Demo_Folder_RetrieveByType",
+        {
+            FolderType: $("#FolderType").val()
+        },
+        function(data, status){
+            $("#results").html(JSON.stringify(data));
+        });
+    });
+    
+    $("#DataExtensionColumns_Retrieve").on("click", function(){
+        $.post("Demo_DataExtensionColumns_Retrieve",
+        {
+            CustomerKey: $("#CustomerKey").val()
+        },
+        function(data, status){
+            $("#results").html(JSON.stringify(data));
+            var myRecords = JSON.parse(JSON.stringify(data));
+            $('#deTable').dynatable({
+              dataset: {
+                records: myRecords
+              }
+            });
+        });
+    });
+});
+</script>
+</head>
+<body>
+    <p id="FolderHeader">Folder Funcitons</p>
+    <div id="Folder">
+        <a id="Folder_RetrieveByID">Folder_RetrieveByID</a> <input type="text" id="FolderID"><br>
+        <a id="Folder_RetrieveByType">Folder_RetrieveByType</a> <input type="text" id="FolderType"><br>
+    </div>
+
+<br>
+    <p id="DataExtensionHeader">Folder Funcitons</p>
+    <div id="DataExtension">
+        <a id="DataExtensionColumns_Retrieve">DataExtensionColumns_Retrieve</a> <input type="text" id="CustomerKey"><br>
+    </div>
+    
+    <div id="results">
+    
+    </div>
+<table id="deTable"></table></body>
+</html>
+
+
+{{mid}}
+{{eid}}
+{{appID}}
+

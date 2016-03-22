@@ -25,8 +25,30 @@ ETHelper.prototype.init = function(request) {
 	};
 	SoapClient = new FuelSoap(options);
 }
+ETHelper.prototype.Folder_RetrieveByID = function(ID, callback) { 
 
-ETHelper.prototype.folder_findByParent = function(parentID, callback) { 
+	var parms = {
+		objectType: "DataFolder",
+		props: ["Name", "ID", "ContentType", "ParentFolder.ID"],
+		options: {
+			filter:{
+				leftOperand: 'ID',
+				operator: 'equals',
+				rightOperand: ID
+			}
+		}
+	};
+	
+	this.retrieve(parms, function(err, response){
+		if (err) {
+			callback(err, null);
+		}
+		else{
+			callback(null, response);
+		}
+	});
+};
+ETHelper.prototype.Folder_RetrieveByParentID = function(parentID, callback) { 
 
 	var parms = {
 		objectType: "DataFolder",
@@ -49,7 +71,7 @@ ETHelper.prototype.folder_findByParent = function(parentID, callback) {
 		}
 	});
 };
-ETHelper.prototype.folder_retrieve = function(type, callback){
+ETHelper.prototype.Folder_RetrieveByType = function(type, callback){
 
 	var parms = {
 		objectType: "DataFolder",
@@ -72,7 +94,7 @@ ETHelper.prototype.folder_retrieve = function(type, callback){
 		}
 	});
 };
-ETHelper.prototype.folder_findByNameType = function(type, name, callback) {
+ETHelper.prototype.Folder_RetrieveByNameAndType = function(type, name, callback) {
 
 	//Setup the DEFolder Lookup Filter
 	var parms = {
@@ -105,7 +127,7 @@ ETHelper.prototype.folder_findByNameType = function(type, name, callback) {
 		}
 	});
 };
-ETHelper.prototype.folder_findParentByType = function(type, callback) {
+ETHelper.prototype.Folder_RetrieveParentByType = function(type, callback) {
 
 	//Setup the DEFolder Lookup Filter
 	var parms = {
@@ -138,7 +160,7 @@ ETHelper.prototype.folder_findParentByType = function(type, callback) {
 		}
 	});
 };
-ETHelper.prototype.folder_findByNameParent = function(name, parentID, callback) {
+ETHelper.prototype.Folder_RetrieveByNameAndParentID = function(name, parentID, callback) {
 
 	//Setup the DEFolder Lookup Filter
 	var parms = {
@@ -171,7 +193,7 @@ ETHelper.prototype.folder_findByNameParent = function(name, parentID, callback) 
 		}
 	});
 };
-ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback) {
+ETHelper.prototype.Folder_Create = function(type, name, parentFolderID, callback) {
 
 	var newFolderParms = {
 		objectType: "DataFolder",
@@ -202,7 +224,7 @@ ETHelper.prototype.folder_create = function(type, name, parentFolderID, callback
 		}
 	});
 };
-ETHelper.prototype.de_create = function(fields, callback) {
+ETHelper.prototype.DataExtension_Create = function(fields, callback) {
 
 	var parms = {
 		objectType: "DataExtension",
@@ -232,7 +254,7 @@ ETHelper.prototype.de_create = function(fields, callback) {
 		}
 	});
 };
-ETHelper.prototype.de_update = function(fields, callback) {
+ETHelper.prototype.DataExtension_Update = function(fields, callback) {
 
 	var parms = {
 		objectType: "DataExtension",
@@ -261,7 +283,7 @@ ETHelper.prototype.de_update = function(fields, callback) {
 		}
 	});
 };
-ETHelper.prototype.de_delete = function(callback) {
+ETHelper.prototype.DataExtension_Delete = function(callback) {
 
 	var parms = {
 		objectType: "DataExtension",
@@ -283,7 +305,7 @@ ETHelper.prototype.de_delete = function(callback) {
 		}
 	});
 };
-ETHelper.prototype.de_findByParent = function(parentID, callback) { 
+ETHelper.prototype.DataExtensions_FindByParent = function(parentID, callback) { 
 
 	var parms = {
 		objectType: "dataextension",
@@ -306,7 +328,7 @@ ETHelper.prototype.de_findByParent = function(parentID, callback) {
 		}
 	});
 };
-ETHelper.prototype.deField_list = function(customerKey, callback) {
+ETHelper.prototype.DataExtensionColumns_Retrieve = function(customerKey, callback) {
 	var parms = {
 		objectType: "DataExtensionField",
 		props: ["Name", "CustomerKey"],
@@ -328,7 +350,7 @@ ETHelper.prototype.deField_list = function(customerKey, callback) {
 		}
 	});
 };
-ETHelper.prototype.de_retrieveAll = function(callback) {
+ETHelper.prototype.DataExtension_RetrieveAll = function(callback) {
 	
 	var parms = {
 		objectType: "dataextension",
@@ -353,7 +375,6 @@ ETHelper.prototype.de_retrieveAll = function(callback) {
 		}
 	});
 };
-
 ETHelper.prototype.ContinueRequest = function(requestID){
 
 	var parms = {
@@ -381,25 +402,54 @@ ETHelper.prototype.ContinueRequest = function(requestID){
 		}
 	});
 };
+ETHelper.prototype.DataExtension_RetrieveRows = function(nameCustKey, props, callback) {
+	
+	var that = this;
 
-ETHelper.prototype.de_retrieveRows = function(nameCustKey, props, callback) {
-	
-	var parms = {
-		objectType: "DataExtensionObject[" + nameCustKey + "]",
-		props: props,
-		options: {}
-	};
-	
-	this.retrieve(parms, function(err, response) {
-		if (err) {
-			callback(err, null);
-		}
-		else{
-			callback(null, response);
-		}
-	});
+	if(!props)
+	{
+		props = new Array();
+		this.DataExtensionColumns_Retrieve(nameCustKey, function(err, response) {
+				for( var i = 0; i < response.length; i++){
+					props.push(response[i].Name)
+				}
+				
+				var parms = {
+					objectType: "DataExtensionObject[" + nameCustKey + "]",
+					props: props,
+					options: {}
+				};	
+				
+				that.retrieve(parms, function(err, response) {
+					if (err) {
+						callback(err, null);
+					}
+					else{
+						callback(null, DataExtension_FormatRows(response));
+					}
+				});
+		});
+	}
+	else
+	{
+		var parms = {
+			objectType: "DataExtensionObject[" + nameCustKey + "]",
+			props: props,
+			options: {}
+		};	
+		
+		this.retrieve(parms, function(err, response) {
+			if (err) {
+				callback(err, null);
+			}
+			else{
+				callback(null, DataExtension_FormatRows(response));
+			}
+		});
+		
+	}
 };
-ETHelper.prototype.obj_findByParent = function(parentID, objType, callback) { 
+ETHelper.prototype.Object_FindByParentID = function(parentID, objType, callback) { 
 
 	var parms = new Object();
 	if(objType === "dataextension")
@@ -448,7 +498,7 @@ ETHelper.prototype.obj_findByParent = function(parentID, objType, callback) {
 		}
 	});
 };
-ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
+ETHelper.prototype.Object_CheckExists = function(customerKey, objType, callback) {
 	var parms = {
 		objectType: objType,
 		props: ["Name"],
@@ -470,7 +520,7 @@ ETHelper.prototype.nameCheck = function(customerKey, objType, callback) {
 		}
 	});
 };
-ETHelper.prototype.query_status = function(taskID, callback) {
+ETHelper.prototype.Query_Status = function(taskID, callback) {
 	
 	var parms = {
 		objectType: "AsyncActivityStatus",
@@ -493,7 +543,7 @@ ETHelper.prototype.query_status = function(taskID, callback) {
 		}
 	});
 };
-ETHelper.prototype.query_create = function(callback) {
+ETHelper.prototype.Query_Create = function(callback) {
 
 	var parms = {
 		objectType: "QueryDefinition",
@@ -526,7 +576,7 @@ ETHelper.prototype.query_create = function(callback) {
 		}
 	});
 };
-ETHelper.prototype.query_retrieve = function(customerKey, callback) {
+ETHelper.prototype.Query_Retrieve = function(customerKey, callback) {
 	
 	var parms = {
 		objectType: "querydefinition",
@@ -549,7 +599,7 @@ ETHelper.prototype.query_retrieve = function(customerKey, callback) {
 		}
 	});
 };
-ETHelper.prototype.query_execute = function(queryObjectID, callback) {
+ETHelper.prototype.Query_Execute = function(queryObjectID, callback) {
 
 	var parms = {
 		objectType: "QueryDefinition",
@@ -573,7 +623,7 @@ ETHelper.prototype.query_execute = function(queryObjectID, callback) {
 		}
 	});
 };
-ETHelper.prototype.query_delete = function(callback) {
+ETHelper.prototype.Query_Delete = function(callback) {
 
 	var parms = {
 		objectType: "querydefinition",
@@ -642,8 +692,6 @@ ETHelper.prototype.retrieve = function(parms, callback) {
 		}
 	);
 };
-
-
 ETHelper.prototype.retrieve2 = function(parms, callback) {
 
 	SoapClient.retrieve(parms.objectType,parms.props,parms.options,function(err, response) {
@@ -709,8 +757,24 @@ ETHelper.prototype.perform = function(parms, callback) {
 	);
 };
 
-
 //******************** End Iterface to standard ET SOAP Methods ****************************//
 
 
+//******************** DataExtension Helper Function **************************************//
+function DataExtension_FormatRows(data){
+	var rows = new Array()
+	
+	for( var i=0 ; i < data.length; i++){
+		
+		var obj = new Object();
+		
+		for(var j=0; j< data[i].Properties.Property.length; j++)
+		{
+			obj[data[i].Properties.Property[j].Name] = data[i].Properties.Property[j].Value;
+		}
+		rows.push(obj);
+	}
+	
+	return rows;
+}
 module.exports = ETHelper;

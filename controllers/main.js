@@ -6,6 +6,8 @@ var _ = require('underscore');
 var errorHandler = require('et-express-error-handlers');
 var testController = require('./test-can-remove'); // you should remove this. just for unit tests
 
+var ETHelper = require(__dirname + '/../models/ETHelper.js');
+var etHelper = new ETHelper();
 
 var SampleModel = require(__dirname + '/../models/SampleModel.js');
 var sampleModel = new SampleModel();
@@ -112,7 +114,53 @@ module.exports = function(server) {
 		});
 	});
 	
+	server.post('/Demo_Folder_RetrieveByType', function(req, res) {
+		etHelper.init(req); 
+
+		etHelper.Folder_RetrieveByType(req.body.FolderType, function(err, response) {
+            if (err) {
+				res.send({ results : err.results[0] });
+			}
+			else{
+				res.send({ results: response});
+			}
+        });
+	});
+	
+	
+	server.post('/Demo_Folder_RetrieveByID', function(req, res) {
+		etHelper.init(req); 
+
+		etHelper.Folder_RetrieveByID(req.body.ID, function(err, response) {
+            if (err) {
+				res.send({ results : err.results[0] });
+			}
+			else{
+				res.send({ results: response});
+			}
+        });
+	});
+
+
+server.post('/Demo_DataExtensionColumns_Retrieve', function(req, res) {
+		etHelper.init(req); 
+
+		etHelper.DataExtension_RetrieveRows(req.body.CustomerKey, null, function(err, response) {
+            if (err) {
+				res.send({ results : err.results[0] });
+			}
+			else{
+				res.send({ results: response});
+			}
+        });
+	});
+	
+	
+	
+
 	errorHandler(server);
 	testController(server);
 };
+
+
 
